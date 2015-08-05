@@ -11,9 +11,6 @@ import shutil
 
 CSV_HEADERS = ['NAME','KINDS','QUANTITY','WIDTH','HEIGHT','SIDE 1 COLORS','SIDE 2 COLORS','CONTENT','PRODUCT GROUP','COMPANY','FIRST NAME','FAMILY NAME','DESCRIPTION','NOTES','DUE DATE','GRAIN','TOP OFFCUT','LEFT OFFCUT','BOTTOM OFFCUT','RIGHT OFFCUT','PRIORITY']
 
-SPECIAL_CHARS = {' ',';', ':', '/','|','}','{','<','>','!','@','#','$','%'}
-
-
 
 # First check what pdf files we have in the folder
 DIR = os.path.dirname(sys.argv[0]) # remove this in production
@@ -47,13 +44,6 @@ def _return_csv_name_for(pdf_name):
             if csv_file_number == pdf_name_number:
                 return file
 
-# add regular expressions it will be easier to delete characters
-def _delete_special_chars(special_chars, content):
-    for char in content:
-        if char in special_chars:
-            content = content.replace(char,'')
-    return content
-
 # Add regular expressions to remove characters
 def _find_prepp_notes(pdf):
     text_to_replace = re.findall(r'\(.*\)', pdf)
@@ -84,7 +74,7 @@ def _merge_notes_for(pdf, notes):
         row['NOTES']= notes["notes"]
     row['QUANTITY'] = notes["quantity"]
     row['CONTENT'] = pdf
-    row['NAME'] =  pdf[:-4] #_delete_special_chars(SPECIAL_CHARS,row['NAME'])
+    row['NAME'] =  pdf[:-4]
     row['DESCRIPTION'] = pdf.split('-')[0] #pdf[:7]
     return row
 
