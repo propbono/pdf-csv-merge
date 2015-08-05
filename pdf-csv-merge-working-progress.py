@@ -13,12 +13,12 @@ CSV_HEADERS = ['NAME','KINDS','QUANTITY','WIDTH','HEIGHT','SIDE 1 COLORS','SIDE 
 
 
 # First check what pdf files we have in the folder
-DIR = os.path.dirname(sys.argv[0]) # remove this in production
+DIR = os.path.dirname(sys.argv[0])
 
-PREPPED_PDF_PATH = "N:\\" #os.path.join(DIR,"prepped_pdf")#
-PRESS_READY_PDF_PATH = "Q:\\" #os.path.join(DIR,"press_ready_pdf")
-SOURCE_CSV_PATH = "O:\\" #"\\\\pgwsbs2011\\MetrixCSV"
-MERGED_CSV_REMOTE = "K:\\" #
+PREPPED_PDF_PATH = "N:\\"
+PRESS_READY_PDF_PATH = "Q:\\"
+SOURCE_CSV_PATH = "O:\\"
+MERGED_CSV_REMOTE = "K:\\"
 PREPPED_PDF_DONE_PATH = os.path.join(PREPPED_PDF_PATH,"00Done")
 MERGED_CSV_LOCAL = os.path.join(DIR,"merged_csv")
 
@@ -58,11 +58,8 @@ def _delete_prepp_notes_from(pdf):
     return newpdf
 
 def _move_pdf_to_press_ready_pdf(name, new_name):
-   # shutil.copyfile(os.path.join(PREPPED_PDF_PATH, name), os.path.join(
-   #                              PRESS_READY_PDF_PATH,new_name))
-    shutil.move(os.path.join(PREPPED_PDF_PATH, name),
+   shutil.move(os.path.join(PREPPED_PDF_PATH, name),
                 os.path.join(PRESS_READY_PDF_PATH,new_name))
-   # os.remove(os.path.join(PREPPED_PDF_PATH,name))
 
 def _merge_notes_for(pdf, notes):
     row = _read_csv_values_for(pdf)
@@ -75,16 +72,13 @@ def _merge_notes_for(pdf, notes):
     row['QUANTITY'] = notes["quantity"]
     row['CONTENT'] = pdf
     row['NAME'] =  pdf[:-4]
-    row['DESCRIPTION'] = pdf.split('-')[0] #pdf[:7]
+    row['DESCRIPTION'] = pdf.split('-')[0]
     return row
 
 def _save_csv_data(dir_name, pdf, notes):
     today = datetime.date.today().isoformat()
     csv_file_name = os.path.join(MERGED_CSV_LOCAL,dir_name,
                                  notes["stock"]+'-'+today+'-V1'+'.csv')
-    # if os.path.exists(csv_file_name):
-    #     i = csv_file_name[-5:-4]
-    #     n = csv_file_name[:-5] + str(int(i)+1)+".csv"
 
     fieldnames = CSV_HEADERS
     if not os.path.exists(csv_file_name):
@@ -94,16 +88,13 @@ def _save_csv_data(dir_name, pdf, notes):
             row = _merge_notes_for(pdf, notes)
             writer.writerow(row)
             print("saved")
-            #return True
     else:
         with open(csv_file_name, 'a', newline='') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             row = _merge_notes_for(pdf, notes)
             writer.writerow(row)
             print("saved")
-            #return True
 
-# Works :)
 def extract_notes_from(pdf):
 # SampleName(3.5x2-16pt1000-g:sameday-n:diecut PocketFolder 4 inch)-1000.pdf
     notes = {}
@@ -134,7 +125,6 @@ def extract_notes_from(pdf):
 def _copy_pdf_to_done_folder(pdf):
     shutil.copyfile(os.path.join(PREPPED_PDF_PATH, pdf), os.path.join(
                                  PREPPED_PDF_DONE_PATH, pdf))
-
 
 def rename_and_move(pdf):
     new_pdf = _delete_prepp_notes_from(pdf)
@@ -204,4 +194,5 @@ if __name__ == "__main__":
     proccessed_files = merge_csv_from(pdf_list)
     print("Number of files to process", files_to_process)
     print("Files proccessed: ", proccessed_files)
+    # repair this function
     # move_merged_csv()
