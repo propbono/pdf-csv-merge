@@ -44,13 +44,7 @@ def _return_csv_name_for(pdf_name):
             if csv_file_number == pdf_name_number:
                 return file
 
-# Add regular expressions to remove characters
-def _find_prepp_notes(pdf):
-    text_to_replace = re.findall(r'\(.*\)', pdf)
-    if text_to_replace:
-        return  text_to_replace
-    else:
-        return {}
+
 
 def _delete_prepp_notes_from(pdf):
     text_to_replace = _find_prepp_notes(pdf)
@@ -60,6 +54,14 @@ def _delete_prepp_notes_from(pdf):
 def _move_pdf_to_press_ready_pdf(name, new_name):
    shutil.move(os.path.join(PREPPED_PDF_PATH, name),
                 os.path.join(PRESS_READY_PDF_PATH,new_name))
+
+# Add regular expressions to remove characters
+def _find_prepp_notes(pdf):
+    text_to_replace = re.findall(r'\(.*\)', pdf)
+    if text_to_replace:
+        return  text_to_replace
+    else:
+        return {}
 
 def _merge_notes_for(pdf, notes):
     row = _read_csv_values_for(pdf)
@@ -74,6 +76,33 @@ def _merge_notes_for(pdf, notes):
     row['NAME'] =  pdf[:-4]
     row['DESCRIPTION'] = pdf.split('-')[0]
     return row
+
+def extract_notes_from(pdf):
+# SampleName(3.5x2-16pt1000-g:sameday-n:diecut PocketFolder 4 inch)-1000.pdf
+    notes = {}
+    notes_from_pdf = _find_prepp_notes(pdf)
+    if notes_from_pdf:
+        notes_from_pdf = notes_from_pdf[0].lstrip('(').rstrip(')').split('-')
+        notes["width"] = notes_from_pdf[0].split('x')[0]
+        notes["height"] = notes_from_pdf[0].split('x')[1]
+        notes["stock"] = notes_from_pdf[1].lower()
+        notes["quantity"] = pdf.split('-')[-1].rstrip(".pdf")
+
+        if notes["stock"] == "16pt":
+            if int(notes["quantity"]) > 1000:
+                notes["stock"] += "5000"
+            else:
+                notes["stock"] += "1000"
+
+        for n in notes_from_pdf[2:]:
+            if _operator.contains(n,"n;"):
+                notes["notes"] = n.lstrip("n;")
+            elif _operator.contains(n,"g;"):
+                notes["group"] = n.lstrip("g;").upper()
+
+        return notes
+    else:
+        return None
 
 def _save_csv_data(dir_name, pdf, notes):
     today = datetime.date.today().isoformat()
@@ -94,33 +123,6 @@ def _save_csv_data(dir_name, pdf, notes):
             row = _merge_notes_for(pdf, notes)
             writer.writerow(row)
             print("saved")
-
-def extract_notes_from(pdf):
-# SampleName(3.5x2-16pt1000-g:sameday-n:diecut PocketFolder 4 inch)-1000.pdf
-    notes = {}
-    almost_notes = _find_prepp_notes(pdf)
-    if almost_notes:
-        almost_notes = almost_notes[0].lstrip('(').rstrip(')').split('-')
-        notes["width"] = almost_notes[0].split('x')[0]
-        notes["height"] = almost_notes[0].split('x')[1]
-        notes["stock"] = almost_notes[1].lower()
-        notes["quantity"] = pdf.split('-')[-1].rstrip(".pdf")
-
-        if notes["stock"] == "16pt":
-            if int(notes["quantity"]) > 1000:
-                notes["stock"] += "5000"
-            else:
-                notes["stock"] += "1000"
-
-        for n in almost_notes[2:]:
-            if _operator.contains(n,"n;"):
-                notes["notes"] = n.lstrip("n;")
-            elif _operator.contains(n,"g;"):
-                notes["group"] = n.lstrip("g;").upper()
-
-        return notes
-    else:
-        return None
 
 def _copy_pdf_to_done_folder(pdf):
     shutil.copyfile(os.path.join(PREPPED_PDF_PATH, pdf), os.path.join(
