@@ -159,7 +159,20 @@ def merge_csv_from(pdf_list):
             _copy_pdf_to_done_folder(pdf)
             _move_pdf_to_press_ready_pdf(pdf,pdf)
             print("Not in csv's - moving file: ", pdf)
-
+    # global dictionary_of_all_list
+    # for pdf in pdf_list:
+    #   notes = extract_notes_from(pdf)
+    #   if notes is not None:
+    #       dictionary_of_all_list = add_data_to_dictionary(pdf, notes)
+    #       files_in_csv_count += 1 - change this to counting in specific list, actually I think it's enough to return list size.
+    #   else:
+    #        _copy_pdf_to_done_folder(pdf)
+    #       _move_pdf_to_press_ready_pdf(pdf,pdf)
+    #       print("Not in csv's - moving file: ", pdf)
+    #for dictionary in dictionary_of_allList:
+    #    _save_csv_data(dictionary) - change _save_csv_data() function to check if the name of csv exists and if so create different one
+    #                                 open csv file once and save in the loop all the files in the list to this file.
+    #
 
     return processed_files_count
 
