@@ -149,17 +149,19 @@ def add_data_to_csv(pdf, notes):
         _save_csv_data(dir_name, pdf, notes)
 
 def merge_csv_from(pdf_list):
-    processed_files_count = 0
+    processed_files_with_name_change = 0
+    processed_files_without_name_change = 0
 
     for pdf in pdf_list:
         pdf_without_notes, notes = extract_notes_from(pdf)
         if notes is not None:
-            pdf = rename_and_move(pdf) # this need to be moved at the end after creating csv
-            add_data_to_csv(pdf,notes) # this need to be moved out from here as the one of the latest step whe we already have all data merged into dictionaries
-            processed_files_count += 1
+            _add_data_to_dict(pdf, notes)
+            #pdf = rename_and_move(pdf) # this need to be moved at the end after creating csv
+            #add_data_to_csv(pdf,notes) # this need to be moved out from here as the one of the latest step whe we already have all data merged into dictionaries
+            processed_files_with_name_change += 1
             _add_data_to_dict(pdf_without_notes, notes)
         else:
-            
+            processed_files_without_name_change+=1
             _copy_pdf_to_done_folder(pdf)
             _move_pdf_to_press_ready_pdf(pdf,pdf)
             print("Not in csv's - moving file: ", pdf)
@@ -179,7 +181,7 @@ def merge_csv_from(pdf_list):
     #                                 open csv file once and save in the loop all the files in the list to this file.
     #
 
-    return processed_files_count
+    return processed_files_with_name_change + processed_files_without_name_change
 
 def move_merged_csv():
     today = datetime.date.today().isoformat()
