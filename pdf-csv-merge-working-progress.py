@@ -202,7 +202,7 @@ def _move_pdf_merged_csv(name, new_name):
 
 if __name__ == "__main__":
     pdf_list = [p for p in sorted(os.listdir(PREPPED_PDF_PATH)) if
-                p.startswith("U") and p.endswith('.pdf')]
+                p.upper().startswith("U") and p.lower().endswith('.pdf')]
 
     files_to_process = len(pdf_list)
     print("Number of files to process", files_to_process)
