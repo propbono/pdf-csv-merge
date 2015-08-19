@@ -7,10 +7,14 @@ import datetime
 import os, sys, csv
 import re
 import shutil
+from collections import defaultdict
+
 
 
 CSV_HEADERS = ['NAME','KINDS','QUANTITY','WIDTH','HEIGHT','SIDE 1 COLORS','SIDE 2 COLORS','CONTENT','PRODUCT GROUP','COMPANY','FIRST NAME','FAMILY NAME','DESCRIPTION','NOTES','DUE DATE','GRAIN','TOP OFFCUT','LEFT OFFCUT','BOTTOM OFFCUT','RIGHT OFFCUT','PRIORITY']
 
+CSV_DICT = defaultdict(list) # dictionary of lists for keeping track of rows with data in proper stock type
+ROWS_DICT = {}
 
 # First check what pdf files we have in the folder
 DIR = os.path.dirname(sys.argv[0])
@@ -43,8 +47,6 @@ def _return_csv_name_for(pdf_name):
             csv_file_number = csv_file_number.split("-")[0]
             if csv_file_number == pdf_name_number:
                 return file
-
-
 
 def _delete_prepp_notes_from(pdf):
     text_to_replace = _find_prepp_notes(pdf)
@@ -99,8 +101,8 @@ def extract_notes_from(pdf):
                 notes["notes"] = n.lstrip("n;")
             elif _operator.contains(n,"g;"):
                 notes["group"] = n.lstrip("g;").upper()
-
-        return notes
+        pdf = _delete_prepp_notes_from(pdf)
+        return pdf, notes
     else:
         return None
 
@@ -150,15 +152,18 @@ def merge_csv_from(pdf_list):
     processed_files_count = 0
 
     for pdf in pdf_list:
-        notes = extract_notes_from(pdf)
+        pdf_without_notes, notes = extract_notes_from(pdf)
         if notes is not None:
-            pdf = rename_and_move(pdf)
-            add_data_to_csv(pdf,notes)
+            pdf = rename_and_move(pdf) # this need to be moved at the end after creating csv
+            add_data_to_csv(pdf,notes) # this need to be moved out from here as the one of the latest step whe we already have all data merged into dictionaries
             processed_files_count += 1
+            _add_data_to_dict(pdf_without_notes, notes)
         else:
+            
             _copy_pdf_to_done_folder(pdf)
             _move_pdf_to_press_ready_pdf(pdf,pdf)
             print("Not in csv's - moving file: ", pdf)
+
     # global dictionary_of_all_list
     # for pdf in pdf_list:
     #   notes = extract_notes_from(pdf)
@@ -198,6 +203,12 @@ def _move_pdf_merged_csv(name, new_name):
      today = datetime.date.today().isoformat()
      shutil.copy(os.path.join(MERGED_CSV_LOCAL,today, name),
                 os.path.join(MERGED_CSV_REMOTE,today,new_name))
+
+def _add_data_to_dict(pdf, notes):
+    data = _merge_notes_for(pdf,notes)
+    key = notes["stock"]
+    ROWS_DICT.setdefault(key,[]).append(data)
+
 
 
 if __name__ == "__main__":
