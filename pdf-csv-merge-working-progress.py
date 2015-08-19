@@ -7,13 +7,11 @@ import datetime
 import os, sys, csv
 import re
 import shutil
-from collections import defaultdict
+
 
 
 
 CSV_HEADERS = ['NAME','KINDS','QUANTITY','WIDTH','HEIGHT','SIDE 1 COLORS','SIDE 2 COLORS','CONTENT','PRODUCT GROUP','COMPANY','FIRST NAME','FAMILY NAME','DESCRIPTION','NOTES','DUE DATE','GRAIN','TOP OFFCUT','LEFT OFFCUT','BOTTOM OFFCUT','RIGHT OFFCUT','PRIORITY']
-
-CSV_DICT = defaultdict(list) # dictionary of lists for keeping track of rows with data in proper stock type
 ROWS_DICT = {}
 
 # First check what pdf files we have in the folder
@@ -65,20 +63,6 @@ def _find_prepp_notes(pdf):
     else:
         return {}
 
-def _merge_notes_for(pdf, notes):
-    row = _read_csv_values_for(pdf)
-    row['WIDTH'] = notes["width"]
-    row['HEIGHT'] = notes["height"]
-    if "group" in notes:
-        row['PRODUCT GROUP'] = notes["group"]
-    if "notes" in notes:
-        row['NOTES']= notes["notes"]
-    row['QUANTITY'] = notes["quantity"]
-    row['CONTENT'] = pdf
-    row['NAME'] =  pdf[:-4]
-    row['DESCRIPTION'] = pdf.split('-')[0]
-    return row
-
 def extract_notes_from(pdf):
 # SampleName(3.5x2-16pt1000-g:sameday-n:diecut PocketFolder 4 inch)-1000.pdf
     notes = {}
@@ -106,80 +90,97 @@ def extract_notes_from(pdf):
     else:
         return None
 
-def _save_csv_data(dir_name, pdf, notes):
-    today = datetime.date.today().isoformat()
-    csv_file_name = os.path.join(MERGED_CSV_LOCAL,dir_name,
-                                 notes["stock"]+'-'+today+'-V1'+'.csv')
-
-    fieldnames = CSV_HEADERS
-    if not os.path.exists(csv_file_name):
-        with open(csv_file_name, 'a', newline='') as csv_file:
-            writer = csv.DictWriter(csv_file,fieldnames=fieldnames)
-            writer.writeheader()
-            row = _merge_notes_for(pdf, notes)
-            writer.writerow(row)
-            print("saved")
-    else:
-        with open(csv_file_name, 'a', newline='') as csv_file:
-            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-            row = _merge_notes_for(pdf, notes)
-            writer.writerow(row)
-            print("saved")
+def _merge_notes_for(pdf, notes):
+    row = _read_csv_values_for(pdf)
+    row['WIDTH'] = notes["width"]
+    row['HEIGHT'] = notes["height"]
+    if "group" in notes:
+        row['PRODUCT GROUP'] = notes["group"]
+    if "notes" in notes:
+        row['NOTES']= notes["notes"]
+    row['QUANTITY'] = notes["quantity"]
+    row['CONTENT'] = pdf
+    row['NAME'] =  pdf[:-4]
+    row['DESCRIPTION'] = pdf.split('-')[0]
+    return row
 
 def _copy_pdf_to_done_folder(pdf):
     shutil.copyfile(os.path.join(PREPPED_PDF_PATH, pdf), os.path.join(
                                  PREPPED_PDF_DONE_PATH, pdf))
 
-def rename_and_move(pdf):
-    new_pdf = _delete_prepp_notes_from(pdf)
-    _copy_pdf_to_done_folder(pdf)
-    _move_pdf_to_press_ready_pdf(pdf, new_pdf)
-    return new_pdf
+def rename_and_move_pdf(pdf_list):
+    for pdf in pdf_list:
+        new_pdf = _delete_prepp_notes_from(pdf)
+        _copy_pdf_to_done_folder(pdf)
+        _move_pdf_to_press_ready_pdf(pdf, new_pdf)
 
-def add_data_to_csv(pdf, notes):
+def _add_data_to_dict(pdf, notes):
+    data = _merge_notes_for(pdf,notes)
+    key = notes["stock"]
+    ROWS_DICT.setdefault(key,[]).append(data)
+
+def _add_data_to_csv(key, data):
     today = datetime.date.today().isoformat()
     dir_name = os.path.join(MERGED_CSV_LOCAL,today)
     if os.path.isdir(dir_name):
-        print("Directory exists - saving file: ", pdf)
-        _save_csv_data(dir_name, pdf, notes)
+        print("Directory exists - saving file: ", key)
+        _save_csv_data(dir_name, key, data)
     else:
         print("Directory doesn't exists - creating directory: ", dir_name)
         os.mkdir(dir_name)
-        print("Saving file: ", pdf)
-        _save_csv_data(dir_name, pdf, notes)
+        print("Saving file: ", key)
+        _save_csv_data(dir_name, key, data)
+
+def _save_csv_data(dir_name, key, data):
+    today = datetime.datetime.now().isoformat()# .date.today().isoformat()
+    csv_file_name = os.path.join(MERGED_CSV_LOCAL,dir_name, key+'-'+today+'.csv')
+
+    if not os.path.exists(csv_file_name):
+        with open(csv_file_name, 'a', newline='') as csv_file:
+            writer = csv.DictWriter(csv_file,fieldnames=CSV_HEADERS)
+            writer.writeheader()
+            row = data
+            writer.writerow(row)
+            print("saved")
+    else:
+        with open(csv_file_name, 'a', newline='') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADERS)
+            row = data
+            writer.writerow(row)
+            print("saved")
 
 def merge_csv_from(pdf_list):
     processed_files_with_name_change = 0
     processed_files_without_name_change = 0
 
+    # _add_data_to_dict(pdf, notes)
     for pdf in pdf_list:
         pdf_without_notes, notes = extract_notes_from(pdf)
         if notes is not None:
-            _add_data_to_dict(pdf, notes)
-            #pdf = rename_and_move(pdf) # this need to be moved at the end after creating csv
-            #add_data_to_csv(pdf,notes) # this need to be moved out from here as the one of the latest step whe we already have all data merged into dictionaries
-            processed_files_with_name_change += 1
             _add_data_to_dict(pdf_without_notes, notes)
+            processed_files_with_name_change += 1
         else:
             processed_files_without_name_change+=1
-            _copy_pdf_to_done_folder(pdf)
-            _move_pdf_to_press_ready_pdf(pdf,pdf)
-            print("Not in csv's - moving file: ", pdf)
 
-    # global dictionary_of_all_list
-    # for pdf in pdf_list:
-    #   notes = extract_notes_from(pdf)
-    #   if notes is not None:
-    #       dictionary_of_all_list = add_data_to_dictionary(pdf, notes)
-    #       files_in_csv_count += 1 - change this to counting in specific list, actually I think it's enough to return list size.
-    #   else:
-    #        _copy_pdf_to_done_folder(pdf)
-    #       _move_pdf_to_press_ready_pdf(pdf,pdf)
-    #       print("Not in csv's - moving file: ", pdf)
-    #for dictionary in dictionary_of_allList:
-    #    _save_csv_data(dictionary) - change _save_csv_data() function to check if the name of csv exists and if so create different one
-    #                                 open csv file once and save in the loop all the files in the list to this file.
-    #
+    #_add_data_to_csv(pdf,notes)
+    print("Creating CSV's:")
+    for key in ROWS_DICT:
+        for data in key:
+            _add_data_to_csv(key, data)
+    print("CSV - created!")
+
+    print("Copying CSV's:")
+    # repair this function
+    move_merged_csv()
+    print("CSV - copied!")
+    #rename_and_move(pdf) check if we don't need to have condition for file without notes
+
+    print("Moving pdf's:")
+    rename_and_move_pdf(pdf_list)
+    print("Pdf - moved!")
+     # _copy_pdf_to_done_folder(pdf)
+     # _move_pdf_to_press_ready_pdf(pdf,pdf)
+     # print("Not in csv's - moving file: ", pdf)
 
     return processed_files_with_name_change + processed_files_without_name_change
 
@@ -188,30 +189,10 @@ def move_merged_csv():
     remote_dir_name = os.path.join(MERGED_CSV_REMOTE,today)
     if not os.path.isdir(remote_dir_name):
         os.mkdir(remote_dir_name)
-    remote_csv_list = os.listdir(remote_dir_name)
     local_csv_list = os.listdir(os.path.join(MERGED_CSV_LOCAL,today))
-    for merged_csvs in local_csv_list:
-        move_csv_file_recursion(merged_csvs,remote_csv_list)
-
-def move_csv_file_recursion(name, list):
-    if name in list:
-        i = name[-5:-4]
-        n = name[:-5] + str(int(i)+1)+".csv"
-        _move_pdf_merged_csv(name,n)
-    else:
-        _move_pdf_merged_csv(name, name)
-
-def _move_pdf_merged_csv(name, new_name):
-     today = datetime.date.today().isoformat()
-     shutil.copy(os.path.join(MERGED_CSV_LOCAL,today, name),
-                os.path.join(MERGED_CSV_REMOTE,today,new_name))
-
-def _add_data_to_dict(pdf, notes):
-    data = _merge_notes_for(pdf,notes)
-    key = notes["stock"]
-    ROWS_DICT.setdefault(key,[]).append(data)
-
-
+    for csv_name in local_csv_list:
+        shutil.copy(os.path.join(MERGED_CSV_LOCAL,today, csv_name),
+                os.path.join(MERGED_CSV_REMOTE,today,csv_name))
 
 if __name__ == "__main__":
     pdf_list = [p for p in sorted(os.listdir(PREPPED_PDF_PATH)) if
@@ -222,5 +203,3 @@ if __name__ == "__main__":
     proccessed_files = merge_csv_from(pdf_list)
     print("Number of files to process", files_to_process)
     print("Files proccessed: ", proccessed_files)
-    # repair this function
-    # move_merged_csv()
