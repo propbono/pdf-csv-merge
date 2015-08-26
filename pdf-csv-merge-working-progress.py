@@ -7,6 +7,7 @@ import datetime
 import os, sys, csv
 import re
 import shutil
+import timeit
 
 
 
@@ -48,8 +49,10 @@ def _return_csv_name_for(pdf_name):
 
 def _delete_prepp_notes_from(pdf):
     text_to_replace = _find_prepp_notes(pdf)
-    newpdf = pdf.replace(text_to_replace[0], '')
-    return newpdf
+    if text_to_replace:
+        return pdf.replace(text_to_replace[0], '')
+    else:
+        return pdf
 
 def _move_pdf_to_press_ready_pdf(name, new_name):
    shutil.move(os.path.join(PREPPED_PDF_PATH, name),
@@ -85,10 +88,11 @@ def extract_notes_from(pdf):
                 notes["notes"] = n.lstrip("n;")
             elif _operator.contains(n,"g;"):
                 notes["group"] = n.lstrip("g;").upper()
-        pdf = _delete_prepp_notes_from(pdf)
+        if notes:
+            pdf = _delete_prepp_notes_from(pdf)
         return pdf, notes
     else:
-        return None
+        return pdf, None
 
 def _merge_notes_for(pdf, notes):
     row = _read_csv_values_for(pdf)
@@ -109,31 +113,32 @@ def _copy_pdf_to_done_folder(pdf):
                                  PREPPED_PDF_DONE_PATH, pdf))
 
 def rename_and_move_pdf(pdf_list):
+    i = 0
     for pdf in pdf_list:
+        i += 1
         new_pdf = _delete_prepp_notes_from(pdf)
         _copy_pdf_to_done_folder(pdf)
         _move_pdf_to_press_ready_pdf(pdf, new_pdf)
+        print(i, " *"*i)
 
 def _add_data_to_dict(pdf, notes):
     data = _merge_notes_for(pdf,notes)
     key = notes["stock"]
     ROWS_DICT.setdefault(key,[]).append(data)
+    print(pdf, " - added!")
 
 def _add_data_to_csv(key, data):
     today = datetime.date.today().isoformat()
     dir_name = os.path.join(MERGED_CSV_LOCAL,today)
     if os.path.isdir(dir_name):
-        print("Directory exists - saving file: ", key)
         _save_csv_data(dir_name, key, data)
     else:
-        print("Directory doesn't exists - creating directory: ", dir_name)
         os.mkdir(dir_name)
-        print("Saving file: ", key)
         _save_csv_data(dir_name, key, data)
 
 def _save_csv_data(dir_name, key, data):
-    today = datetime.datetime.now().isoformat()# .date.today().isoformat()
-    csv_file_name = os.path.join(MERGED_CSV_LOCAL,dir_name, key+'-'+today+'.csv')
+    today = datetime.datetime.now().strftime("%Y-%m-%dT%H%M")# date: 2015-11-03T1935
+    csv_file_name = os.path.join(MERGED_CSV_LOCAL,dir_name, key+'-'+ today +'.csv')
 
     if not os.path.exists(csv_file_name):
         with open(csv_file_name, 'a', newline='') as csv_file:
@@ -141,18 +146,20 @@ def _save_csv_data(dir_name, key, data):
             writer.writeheader()
             row = data
             writer.writerow(row)
-            print("saved")
+
     else:
         with open(csv_file_name, 'a', newline='') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADERS)
             row = data
             writer.writerow(row)
-            print("saved")
+
 
 def merge_csv_from(pdf_list):
     processed_files_with_name_change = 0
     processed_files_without_name_change = 0
 
+    print("Collecting data to dictionary:")
+    dict_tic = timeit.default_timer()
     # _add_data_to_dict(pdf, notes)
     for pdf in pdf_list:
         pdf_without_notes, notes = extract_notes_from(pdf)
@@ -161,23 +168,34 @@ def merge_csv_from(pdf_list):
             processed_files_with_name_change += 1
         else:
             processed_files_without_name_change+=1
+    dict_toc = timeit.default_timer()
+    print("All data in dictionary!", "time (s): ",round(dict_toc - dict_tic, 4))
 
-    #_add_data_to_csv(pdf,notes)
+    #_add_data_to_csv(pdf,notes) -crash here
     print("Creating CSV's:")
+    csv_tic = timeit.default_timer()
     for key in ROWS_DICT:
-        for data in key:
+        for data in ROWS_DICT[key]:
             _add_data_to_csv(key, data)
-    print("CSV - created!")
+    csv_toc = timeit.default_timer()
+    print("CSV - created!","time (s): ", round(csv_toc-csv_tic,4))
+    #for key, data in ROWS_DICT.iteritems():
+    #   for item in data:
+    #        _add_data_to_csv(data, item)
 
     print("Copying CSV's:")
+    copy_csv_tic = timeit.default_timer()
     # repair this function
     move_merged_csv()
-    print("CSV - copied!")
+    copy_csv_toc = timeit.default_timer()
+    print("CSV - copied!","time (s): ", round(copy_csv_toc-copy_csv_tic,4))
     #rename_and_move(pdf) check if we don't need to have condition for file without notes
 
     print("Moving pdf's:")
+    move_pdf_tic =timeit.default_timer()
     rename_and_move_pdf(pdf_list)
-    print("Pdf - moved!")
+    move_pdf_toc =timeit.default_timer()
+    print("Pdf - moved!", "time (s): ", round(move_pdf_toc - move_pdf_tic, 4))
      # _copy_pdf_to_done_folder(pdf)
      # _move_pdf_to_press_ready_pdf(pdf,pdf)
      # print("Not in csv's - moving file: ", pdf)
@@ -195,9 +213,12 @@ def move_merged_csv():
                 os.path.join(MERGED_CSV_REMOTE,today,csv_name))
 
 if __name__ == "__main__":
+    print("Creating pdf list:")
+    pdf_list_tic = timeit.default_timer()
     pdf_list = [p for p in sorted(os.listdir(PREPPED_PDF_PATH)) if
                 p.upper().startswith("U") and p.lower().endswith('.pdf')]
-
+    pdf_list_toc = timeit.default_timer()
+    print("Pdf list - created!", "time (s): ", round(pdf_list_toc -  pdf_list_tic,4))
     files_to_process = len(pdf_list)
     print("Number of files to process", files_to_process)
     proccessed_files = merge_csv_from(pdf_list)
