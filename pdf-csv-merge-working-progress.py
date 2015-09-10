@@ -86,8 +86,12 @@ def extract_notes_from(pdf):
         for n in notes_from_pdf[2:]:
             if _operator.contains(n,"n;"):
                 notes["notes"] = n.lstrip("n;")
+                # if _operator.contains(notes["notes"].lower(),"onesided"):
+                #    notes["notes"].replace("onesided".lower(), "ONESIDED")
             elif _operator.contains(n,"g;"):
                 notes["group"] = n.lstrip("g;").upper()
+                # if _operator.contains(notes["group"].lower(),"onesided") and not _operator.contains(notes["notes"].lower(), "onesided"):
+                #     notes["notes"] += " ONESIDED"
         if notes:
             pdf = _delete_prepp_notes_from(pdf)
         return pdf, notes
@@ -153,7 +157,6 @@ def _save_csv_data(dir_name, key, data):
             row = data
             writer.writerow(row)
 
-
 def merge_csv_from(pdf_list):
     processed_files_with_name_change = 0
     processed_files_without_name_change = 0
@@ -179,26 +182,18 @@ def merge_csv_from(pdf_list):
             _add_data_to_csv(key, data)
     csv_toc = timeit.default_timer()
     print("CSV - created!","time (s): ", round(csv_toc-csv_tic,4))
-    #for key, data in ROWS_DICT.iteritems():
-    #   for item in data:
-    #        _add_data_to_csv(data, item)
 
     print("Copying CSV's:")
     copy_csv_tic = timeit.default_timer()
-    # repair this function
     move_merged_csv()
     copy_csv_toc = timeit.default_timer()
     print("CSV - copied!","time (s): ", round(copy_csv_toc-copy_csv_tic,4))
-    #rename_and_move(pdf) check if we don't need to have condition for file without notes
 
     print("Moving pdf's:")
     move_pdf_tic =timeit.default_timer()
     rename_and_move_pdf(pdf_list)
     move_pdf_toc =timeit.default_timer()
     print("Pdf - moved!", "time (s): ", round(move_pdf_toc - move_pdf_tic, 4))
-     # _copy_pdf_to_done_folder(pdf)
-     # _move_pdf_to_press_ready_pdf(pdf,pdf)
-     # print("Not in csv's - moving file: ", pdf)
 
     return processed_files_with_name_change + processed_files_without_name_change
 
