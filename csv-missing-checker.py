@@ -27,17 +27,12 @@ def save_initial_data_to_csv(name):
 
     print("Creating csv db:")
     csv_db_tic = timeit.default_timer()
-    csv_file_name = name
 
-    if not os.path.exists(csv_file_name):
-        with open(csv_file_name, 'a', newline='') as csv_file:
-            writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADERS)
-            writer.writeheader()
-            save_rows_to_csv(csv_list, writer)
-    else:
-         with open(csv_file_name, 'a', newline='') as csv_file:
-            writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADERS)
-            save_rows_to_csv(csv_list, writer)
+    with open(name, 'a', newline='') as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADERS)
+        writer.writeheader()
+        save_rows_to_csv(csv_list, writer)
+
 
     csv_db_toc = timeit.default_timer()
     print("CSV dict - created!", "time (s): ", round(csv_db_toc - csv_db_tic, 4))
@@ -49,10 +44,14 @@ def save_rows_to_csv(csv_list, writer):
         writer.writerow(row)
 
 def update_db(name):
+      with open(csv_file_name, 'a', newline='') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADERS)
+            save_rows_to_csv(csv_list, writer)
 
 if __name__ == "__main__":
+
     name = "csv_missing_db.csv"
-    if not os.path.exists(csv_file_name):
+    if not os.path.exists(name):
         save_initial_data_to_csv(name)
     else:
         update_db(name)
