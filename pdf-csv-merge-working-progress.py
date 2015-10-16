@@ -83,15 +83,23 @@ def extract_notes_from(pdf):
             else:
                 notes["stock"] += "1000"
 
+
         for n in notes_from_pdf[2:]:
             if _operator.contains(n,"n;"):
                 notes["notes"] = n.lstrip("n;")
-                # if _operator.contains(notes["notes"].lower(),"onesided"):
-                #    notes["notes"].replace("onesided".lower(), "ONESIDED")
             elif _operator.contains(n,"g;"):
                 notes["group"] = n.lstrip("g;").upper()
-                # if _operator.contains(notes["group"].lower(),"onesided") and not _operator.contains(notes["notes"].lower(), "onesided"):
-                #     notes["notes"] += " ONESIDED"
+
+
+        # if notes["group"] == "ONESIDED":
+        #     notes["notes"] += " ONESIDED"
+
+        if notes["stock"] == "uv":
+            notes["group"] = "UV"
+        if notes["stock"] == "matte":
+            notes["group"] = "MATTE"
+
+
         if notes:
             pdf = _delete_prepp_notes_from(pdf)
         return pdf, notes
