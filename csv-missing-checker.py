@@ -1,6 +1,7 @@
 __author__ = 'prepress'
 import csv, os, sys
 import timeit
+from Status import status
 
 DIR = os.path.dirname(sys.argv[0])
 PREPPED_PDF_PATH = "N:\\"
@@ -32,7 +33,7 @@ def save_initial_data_to_csv(name):
     with open(name, 'a', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADERS)
         writer.writeheader()
-        save_rows_to_csv(orders_list, writer, "done")
+        save_rows_to_csv(orders_list, writer, status.Done)
 
     csv_db_toc = timeit.default_timer()
     print("CSV db - created!", "time (s): ", round(csv_db_toc - csv_db_tic, 4))
@@ -54,7 +55,7 @@ def save_rows_to_csv(csv_list, writer, status):
         writer.writerow(row)
 
 def update_db(name):
-    status = ""
+    db_status = ""
     all_orders = list_of_csv_files()
     orders_in_db = #grab orders from csv_db
     press_ready_pdfs = list_of_press_ready_pdfs()
@@ -63,17 +64,17 @@ def update_db(name):
 
     for o in current_orders:
         if o in press_ready_pdfs:
-            status = "done"
+            db_status = status.Done
         elif o in waiting_pdfs:
-            status = "waiting"
+            db_status = status.InApproval
         else:
-            status = ""
+            db_status = ""
 
     # loook at current list and make set with the all csv files
     # then for all set check
     with open(csv_file_name, 'a', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADERS)
-        save_rows_to_csv(csv_list, writer, status)
+        save_rows_to_csv(csv_list, writer, db_status)
 
 if __name__ == "__main__":
 
@@ -82,3 +83,26 @@ if __name__ == "__main__":
         save_initial_data_to_csv(name)
     else:
         update_db(name)
+
+
+# Procedure
+# 0. Add initial data to database:
+#       a - set all status as new
+#       b - check waiting folder and set status inapproval for all order there
+#       c - check onhold folder and set status on hold for all order there
+#       d - check cancelled folder and set status on hold
+#       c - check folder signs and digital and set proper status
+#       d -
+# 1. Add new orders to top of the list (for current day) if its not on the
+# list already                  - New           - Date
+# 2. Check and modify status of all jobs:
+        # a - waiting directory - InApproval    - Date
+        # b - cancel directory  - Cancelled     - Date
+        # c - done directory    - Prepped       - Date
+        # d - on hold directory - OnHold        - Date
+        # e - pressready dir    - PressReady    - Date
+        # f - gagn run dir      - Done          - Date  - PGW, PGW
+        # g - outsource folder  - Outsourced    - Date
+        # h - signs dir         - Signs         - Date
+        # i - digital dir       - Digital       - Date
+# 3. Modify stastus for jobs what changed
