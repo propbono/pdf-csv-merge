@@ -5,6 +5,7 @@ __author__ = 'prepress'
 import csv, os, sys
 import timeit
 from Status import status
+from collections import defaultdict
 
 DIR = os.path.dirname(sys.argv[0])
 
@@ -21,7 +22,7 @@ OUTSOURCED_UPLOADS_PATH = os.path.join(DIR,"00Outsourced")
 
 # PREPPED_PDF_PATH = "N:\\"
 # PRESS_READY_PDF_PATH = "Q:\\"
-# SOURCE_CSV_PATH = "O:\\"
+# SOURCE_CSV_PATH =  #"O:\\"
 # MERGED_CSV_REMOTE = "K:\\"
 # PREPPED_PDF_DONE_PATH = os.path.join(PREPPED_PDF_PATH,"00Done")
 # MERGED_CSV_LOCAL = os.path.join(DIR,"merged_csv")
@@ -61,14 +62,53 @@ def save_initial_data_to_csv(name):
 
 # I think I can create dictionary here and have only one loop over the csv's
 def return_all_upload_numbers():
-    orders_list = [c.split("-")[0] for c in sorted(os.listdir(SOURCE_CSV_PATH)) if
+    orders_list = [c.split("-")[0] for c in sorted(os.listdir(NEW_UPLOADS_PATH)) if
                 c.lower().endswith('.csv')]
     return orders_list
+
+# returns current db structure
+def return_current_db():
+    columns = defaultdict(list)
+    with open("csv_missing_db.csv") as csv_db:
+        reader = csv.DictReader(csv_db)
+        for row in reader:
+            for (k, v) in row.items():
+                columns[k].append(v)
+    return columns
+
+def list_of_new_uploads():
+    all_uploads_list = return_all_upload_numbers()
+    uploads_in_database = return_current_db()[0] # column with uploads
+    return list(set(all_uploads_list) - set(uploads_in_database))
+
+def list_of_prepped_uploads():
+    pass
+
+def list_of_inapproval_uploads():
+    pass
+
+def list_of_onhold_uploads():
+    pass
+
+def list_of_cancelled_uploads():
+    pass
 
 def list_of_press_ready_pdfs():
     pdf_list = [p.split("-")[0] for p in sorted(os.listdir(PRESS_READY_PDF_PATH)) if
                 p.lower().endswith('.pdf') and p.lower().startswith('U') ]
     return pdf_list
+
+def list_of_done_uploads():
+    pass
+
+def list_of_signs_uploads():
+    pass
+
+def list_of_digital_uploads():
+    pass
+
+def list_of_outsourced_uploads():
+    pass
 
 
 def update_db(name):
