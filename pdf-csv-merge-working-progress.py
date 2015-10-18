@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# __author__ = 'propbono'
+# __author__ = 'propbono@gmail.com'
 import _operator
 import datetime
 
@@ -82,7 +82,6 @@ def extract_notes_from(pdf):
                 notes["stock"] += "5000"
             else:
                 notes["stock"] += "1000"
-
 
         for n in notes_from_pdf[2:]:
             if _operator.contains(n,"n;"):
@@ -227,3 +226,6 @@ if __name__ == "__main__":
     proccessed_files = merge_csv_from(pdf_list)
     print("Number of files to process", files_to_process)
     print("Files proccessed: ", proccessed_files)
+
+# rid off csv completly and check processing time
+# repair adding an ONESIDED notes when group onesided
