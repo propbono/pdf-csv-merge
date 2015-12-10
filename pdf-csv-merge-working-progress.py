@@ -134,7 +134,8 @@ def rename_and_move_pdf(pdf_list):
         print(i, " *"*i)
 
 def _add_data_to_dict(pdf, notes):
-    data = _merge_notes_for(pdf,notes)
+    #data = _merge_notes_for(pdf,notes) # this is ok when we have all csv
+    data = _merge_notes_for_without_csv(pdf,notes)
     key = notes["stock"]
     ROWS_DICT.setdefault(key,[]).append(data)
     print(pdf, " - added!")
@@ -215,6 +216,29 @@ def move_merged_csv():
         shutil.copy(os.path.join(MERGED_CSV_LOCAL,today, csv_name),
                 os.path.join(MERGED_CSV_REMOTE,today,csv_name))
 
+def _merge_notes_for_without_csv(pdf, notes):
+    row = _read_csv_values_from_template()
+    row['WIDTH'] = notes["width"]
+    row['HEIGHT'] = notes["height"]
+    if "group" in notes:
+        row['PRODUCT GROUP'] = notes["group"]
+    if "notes" in notes:
+        row['NOTES']= notes["notes"]
+    row['QUANTITY'] = notes["quantity"]
+    row['CONTENT'] = pdf
+    row['NAME'] =  pdf[:-4]
+    row['DESCRIPTION'] = pdf.split('-')[0]
+    return row
+
+# temp function
+def _read_csv_values_from_template():
+    #extract number from pdf name
+    csv_path_and_name= os.path.join(DIR,"csv_template.csv")
+    with open(csv_path_and_name) as csv_file:
+        reader = csv.DictReader(csv_file, delimiter=',', quoting=csv.QUOTE_ALL)
+        for row in reader:
+            return row
+
 if __name__ == "__main__":
     print("Creating pdf list:")
     pdf_list_tic = timeit.default_timer()
@@ -227,3 +251,4 @@ if __name__ == "__main__":
     proccessed_files = merge_csv_from(pdf_list)
     print("Number of files to process", files_to_process)
     print("Files proccessed: ", proccessed_files)
+    os.system("pause")
