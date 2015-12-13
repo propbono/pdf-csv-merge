@@ -229,3 +229,7 @@ if __name__ == "__main__":
 
 # rid off csv completly and check processing time
 # repair adding an ONESIDED notes when group onesided
+
+# after creating all csv and copy them to NAS create project from merged csv
+# move merged csv to done folder
+# add names of csv to description of the project
