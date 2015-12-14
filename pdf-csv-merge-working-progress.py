@@ -247,4 +247,4 @@ if __name__ == "__main__":
 
 # after creating all csv and copy them to NAS create project from merged csv
 # move merged csv to done folder
-# add names of csv to description of the project
+# add names of csv to description of the
