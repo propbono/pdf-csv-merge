@@ -66,6 +66,36 @@ def _find_prepp_notes(pdf):
     else:
         return {}
 
+def _parse_notes(notes):
+    if notes["stock"] == "16pt":
+       if int(notes["quantity"]) > 1000:
+            notes["stock"] += "5000"
+       else:
+            notes["stock"] += "1000"
+    if notes["stock"] == "uv" or notes["stock"] == "u":
+        notes["group"] = "UV"
+    if notes["stock"] == "matte" or notes["stock"] == "m" :
+        notes["group"] = "MATTE"
+
+    if notes["group"] == "D":
+        notes["group"] = "DIECUT"
+    if notes["group"] == "O":
+        notes["group"] = "ONESIDED"
+    if notes["group"] == "S":
+        notes["group"] = "SAMEDAY"
+    if notes["group"] == "U":
+        notes["group"] = "URGENT"
+    if notes["group"] == "R":
+        notes["group"] = "ROUNDCORNER"
+    if notes["group"] == "P":
+        notes["group"] = "PRESSSAMPLE"
+
+    if notes["group"] == "ONESIDED":
+        notes["notes"] = notes["group"] + " " + notes["notes"]
+
+
+    return notes
+
 def extract_notes_from(pdf):
 # SampleName(3.5x2-16pt1000-g:sameday-n:diecut PocketFolder 4 inch)-1000.pdf
     notes = {}
@@ -77,30 +107,15 @@ def extract_notes_from(pdf):
         notes["stock"] = notes_from_pdf[1].lower()
         notes["quantity"] = pdf.split('-')[-1].rstrip(".pdf")
 
-        if notes["stock"] == "16pt":
-            if int(notes["quantity"]) > 1000:
-                notes["stock"] += "5000"
-            else:
-                notes["stock"] += "1000"
-
         for n in notes_from_pdf[2:]:
             if _operator.contains(n,"n;"):
                 notes["notes"] = n.lstrip("n;")
             elif _operator.contains(n,"g;"):
                 notes["group"] = n.lstrip("g;").upper()
 
-
-        # if notes["group"] == "ONESIDED":
-        #     notes["notes"] += " ONESIDED"
-
-        if notes["stock"] == "uv":
-            notes["group"] = "UV"
-        if notes["stock"] == "matte":
-            notes["group"] = "MATTE"
-
-
-        if notes:
-            pdf = _delete_prepp_notes_from(pdf)
+    if notes:
+        notes = _parse_notes(notes)
+        pdf = _delete_prepp_notes_from(pdf)
         return pdf, notes
     else:
         return pdf, None
