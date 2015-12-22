@@ -72,10 +72,7 @@ def _parse_notes(notes):
             notes["stock"] += "5000"
        else:
             notes["stock"] += "1000"
-    if notes["stock"] == "uv" or notes["stock"] == "u":
-        notes["group"] = "UV"
-    if notes["stock"] == "matte" or notes["stock"] == "m" :
-        notes["group"] = "MATTE"
+
 
     if notes["group"] == "D":
         notes["group"] = "DIECUT"
@@ -97,6 +94,14 @@ def _parse_notes(notes):
     if notes["group"] == "ONESIDED":
         notes["notes"] = notes["group"] + " " + notes["notes"]
 
+    if notes["stock"] == "uv" or notes["stock"] == "u": # First save the current group to notes if exists then replace
+        if notes["group"] != '':
+            notes["notes"] += notes["group"] + " "
+        notes["group"] = "UV"
+    if notes["stock"] == "matte" or notes["stock"] == "m" :
+        if notes["group"] != '':
+            notes["notes"] += notes["group"] + " "
+        notes["group"] = "MATTE"
 
     return notes
 
@@ -123,7 +128,7 @@ def extract_notes_from(pdf):
         return pdf, notes
     else:
         return pdf, None
-
+#Obsolete
 def _merge_notes_for(pdf, notes):
     row = _read_csv_values_for(pdf)
     row['WIDTH'] = notes["width"]
@@ -248,7 +253,7 @@ def _merge_notes_for_without_csv(pdf, notes):
     row['DESCRIPTION'] = pdf.split('-')[0]
     return row
 
-# temp function
+# temp function we can eliminate this if we declare the dictionary with proper columns
 def _read_csv_values_from_template():
     #extract number from pdf name
     csv_path_and_name= os.path.join(DIR,"csv_template.csv")
