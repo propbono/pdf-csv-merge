@@ -148,9 +148,7 @@ def _copy_pdf_to_done_folder(pdf):
                                  PREPPED_PDF_DONE_PATH, pdf))
 
 def rename_and_move_pdf(pdf_list):
-    i = 0
-    for pdf in pdf_list:
-        i += 1
+    for i, pdf in enumerate(pdf_list, 1):
         new_pdf = _delete_prepp_notes_from(pdf)
         _copy_pdf_to_done_folder(pdf)
         _move_pdf_to_press_ready_pdf(pdf, new_pdf)
