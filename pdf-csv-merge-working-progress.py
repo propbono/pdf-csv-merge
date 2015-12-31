@@ -161,29 +161,19 @@ def _add_data_to_dict(pdf, notes):
     ROWS_DICT.setdefault(key,[]).append(data)
     print(pdf, " - added!")
 
-def _add_data_to_csv(key, data):
-    today = datetime.date.today().isoformat()
-    dir_name = os.path.join(MERGED_CSV_LOCAL,today)
+
+def _save_csv_data_dict(key, data_dict):
+    today = datetime.datetime.now().strftime("%Y-%m-%dT%H%M")  # date: 2015-11-03T1935
+    dir_name = os.path.join(MERGED_CSV_LOCAL, today)
+    csv_file_name = os.path.join(MERGED_CSV_LOCAL, dir_name, key + '-' + today + '.csv')
+
     if not os.path.isdir(dir_name):
         os.mkdir(dir_name)
-    _save_csv_data(dir_name, key, data)
-
-def _save_csv_data(dir_name, key, data):
-    today = datetime.datetime.now().strftime("%Y-%m-%dT%H%M")# date: 2015-11-03T1935
-    csv_file_name = os.path.join(MERGED_CSV_LOCAL,dir_name, key+'-'+ today +'.csv')
-
     if not os.path.exists(csv_file_name):
-        with open(csv_file_name, 'a', newline='') as csv_file:
-            writer = csv.DictWriter(csv_file,fieldnames=CSV_HEADERS)
+        with open(csv_file_name, 'a', newline = '') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames = CSV_HEADERS)
             writer.writeheader()
-            row = data
-            writer.writerow(row)
-
-    else:
-        with open(csv_file_name, 'a', newline='') as csv_file:
-            writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADERS)
-            row = data
-            writer.writerow(row)
+            writer.writerow(data_dict)
 
 def merge_csv_from(pdf_list):
     processed_files_with_name_change = 0
@@ -205,9 +195,9 @@ def merge_csv_from(pdf_list):
     #_add_data_to_csv(pdf,notes) -crash here
     print("Creating CSV's:")
     csv_tic = timeit.default_timer()
-    for key in ROWS_DICT:
-        for data in ROWS_DICT[key]:
-            _add_data_to_csv(key, data)
+
+    _save_csv_data_dict(ROWS_DICT.keys()[0],ROWS_DICT)
+
     csv_toc = timeit.default_timer()
     print("CSV - created!","time (s): ", round(csv_toc-csv_tic,4))
 
