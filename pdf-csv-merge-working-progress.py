@@ -155,7 +155,7 @@ def _add_data_to_dict(pdf_list):
     for pdf in pdf_list:
         pdf_without_notes, notes = extract_notes_from(pdf)
         if notes is not None:
-            data = _merge_notes_for_without_csv(pdf, notes)
+            data = _merge_notes_for_without_csv(pdf_without_notes, notes)
             key = notes["stock"]
             ROWS_DICT.setdefault(key, []).append(data)
             print(pdf, " - added!")
@@ -231,7 +231,7 @@ def move_merged_csv():
 # temp function we can eliminate this if we declare the dictionary with proper columns
 def _read_csv_values_from_template():
     #extract number from pdf name
-    csv_path_and_name= os.path.join(DIR,"csv_template.csv")
+    csv_path_and_name = os.path.join(config.DIR,"csv_template.csv")
     with open(csv_path_and_name) as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',', quoting=csv.QUOTE_ALL)
         for row in reader:
