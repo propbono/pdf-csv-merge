@@ -105,6 +105,20 @@ def _parse_notes(notes):
 
     return notes
 
+def _merge_notes_for_without_csv(pdf, notes):
+    row = _read_csv_values_from_template()
+    row['WIDTH'] = notes["width"]
+    row['HEIGHT'] = notes["height"]
+    if "group" in notes:
+        row['PRODUCT GROUP'] = notes["group"]
+    if "notes" in notes:
+        row['NOTES']= notes["notes"]
+    row['QUANTITY'] = notes["quantity"]
+    row['CONTENT'] = pdf
+    row['NAME'] =  pdf[:-4]
+    row['DESCRIPTION'] = pdf.split('-')[0]
+    return row
+
 def extract_notes_from(pdf):
 # SampleName(3.5x2-16pt1000-g:sameday-n:diecut PocketFolder 4 inch)-1000.pdf
     notes = {'width':'', 'height':'',"stock":'','quantity':'','notes':'','group':''}
@@ -128,20 +142,6 @@ def extract_notes_from(pdf):
         return pdf, notes
     else:
         return pdf, None
-#Obsolete
-def _merge_notes_for(pdf, notes):
-    row = _read_csv_values_for(pdf)
-    row['WIDTH'] = notes["width"]
-    row['HEIGHT'] = notes["height"]
-    if "group" in notes:
-        row['PRODUCT GROUP'] = notes["group"]
-    if "notes" in notes:
-        row['NOTES']= notes["notes"]
-    row['QUANTITY'] = notes["quantity"]
-    row['CONTENT'] = pdf
-    row['NAME'] =  pdf[:-4]
-    row['DESCRIPTION'] = pdf.split('-')[0]
-    return row
 
 def _copy_pdf_to_done_folder(pdf):
     shutil.copyfile(os.path.join(PREPPED_PDF_PATH, pdf), os.path.join(
@@ -160,7 +160,6 @@ def _add_data_to_dict(pdf, notes):
     key = notes["stock"]
     ROWS_DICT.setdefault(key,[]).append(data)
     print(pdf, " - added!")
-
 
 def _save_csv_data_dict(key, data_dict):
     today = datetime.datetime.now().strftime("%Y-%m-%dT%H%M")  # date: 2015-11-03T1935
@@ -224,20 +223,6 @@ def move_merged_csv():
     for csv_name in local_csv_list:
         shutil.copy(os.path.join(MERGED_CSV_LOCAL,today, csv_name),
                 os.path.join(MERGED_CSV_REMOTE,today,csv_name))
-
-def _merge_notes_for_without_csv(pdf, notes):
-    row = _read_csv_values_from_template()
-    row['WIDTH'] = notes["width"]
-    row['HEIGHT'] = notes["height"]
-    if "group" in notes:
-        row['PRODUCT GROUP'] = notes["group"]
-    if "notes" in notes:
-        row['NOTES']= notes["notes"]
-    row['QUANTITY'] = notes["quantity"]
-    row['CONTENT'] = pdf
-    row['NAME'] =  pdf[:-4]
-    row['DESCRIPTION'] = pdf.split('-')[0]
-    return row
 
 # temp function we can eliminate this if we declare the dictionary with proper columns
 def _read_csv_values_from_template():
