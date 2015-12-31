@@ -8,6 +8,7 @@ import os, sys, csv
 import re
 import shutil
 import timeit
+import configuration
 
 
 
@@ -15,20 +16,14 @@ import timeit
 CSV_HEADERS = ['NAME','KINDS','QUANTITY','WIDTH','HEIGHT','SIDE 1 COLORS','SIDE 2 COLORS','CONTENT','PRODUCT GROUP','COMPANY','FIRST NAME','FAMILY NAME','DESCRIPTION','NOTES','DUE DATE','GRAIN','TOP OFFCUT','LEFT OFFCUT','BOTTOM OFFCUT','RIGHT OFFCUT','PRIORITY']
 ROWS_DICT = {}
 
-# First check what pdf files we have in the folder
-DIR = os.path.dirname(sys.argv[0])
+# Change to config.Working in production
+config = configuration.Debug
 
-PREPPED_PDF_PATH = "N:\\"
-PRESS_READY_PDF_PATH = "Q:\\"
-SOURCE_CSV_PATH = "O:\\"
-MERGED_CSV_REMOTE = "K:\\"
-PREPPED_PDF_DONE_PATH = os.path.join(PREPPED_PDF_PATH,"00Done")
-MERGED_CSV_LOCAL = os.path.join(DIR,"merged_csv")
 
 def _read_csv_values_for(pdf_name):
     #extract number from pdf name
     csv_name = _return_csv_name_for(pdf_name)
-    csv_path_and_name= os.path.join(SOURCE_CSV_PATH,csv_name)
+    csv_path_and_name= os.path.join(config.SOURCE_CSV_PATH, csv_name)
     with open(csv_path_and_name) as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',', quoting=csv.QUOTE_ALL)
         for row in reader:
@@ -37,7 +32,7 @@ def _read_csv_values_for(pdf_name):
 # Check what will happen if there will be no csv file for a pdf
 def _return_csv_name_for(pdf_name):
 
-    csv_list = sorted(os.listdir(SOURCE_CSV_PATH))
+    csv_list = sorted(os.listdir(config.SOURCE_CSV_PATH))
     for file in csv_list:
         if file.endswith('csv'):
             name = os.path.split(pdf_name)[1]
@@ -55,8 +50,8 @@ def _delete_prepp_notes_from(pdf):
         return pdf
 
 def _move_pdf_to_press_ready_pdf(name, new_name):
-   shutil.move(os.path.join(PREPPED_PDF_PATH, name),
-                os.path.join(PRESS_READY_PDF_PATH,new_name))
+   shutil.move(os.path.join(config.PREPPED_PDF_PATH, name),
+               os.path.join(config.PRESS_READY_PDF_PATH, new_name))
 
 # Add regular expressions to remove characters
 def _find_prepp_notes(pdf):
@@ -144,8 +139,8 @@ def extract_notes_from(pdf):
         return pdf, None
 
 def _copy_pdf_to_done_folder(pdf):
-    shutil.copyfile(os.path.join(PREPPED_PDF_PATH, pdf), os.path.join(
-                                 PREPPED_PDF_DONE_PATH, pdf))
+    shutil.copyfile(os.path.join(config.PREPPED_PDF_PATH, pdf), os.path.join(
+                                 config.PREPPED_PDF_DONE_PATH, pdf))
 
 def rename_and_move_pdf(pdf_list):
     for i, pdf in enumerate(pdf_list, 1):
@@ -154,17 +149,28 @@ def rename_and_move_pdf(pdf_list):
         _move_pdf_to_press_ready_pdf(pdf, new_pdf)
         print(i, " *"*i)
 
-def _add_data_to_dict(pdf, notes):
-    #data = _merge_notes_for(pdf,notes) # this is ok when we have all csv
-    data = _merge_notes_for_without_csv(pdf,notes)
-    key = notes["stock"]
-    ROWS_DICT.setdefault(key,[]).append(data)
-    print(pdf, " - added!")
+def _add_data_to_dict(pdf_list):
+    processed_files_with_name_change = 0
+    processed_files_without_name_change = 0
+    for pdf in pdf_list:
+        pdf_without_notes, notes = extract_notes_from(pdf)
+        if notes is not None:
+            data = _merge_notes_for_without_csv(pdf, notes)
+            key = notes["stock"]
+            ROWS_DICT.setdefault(key, []).append(data)
+            print(pdf, " - added!")
+            processed_files_with_name_change += 1
+        else:
+            processed_files_without_name_change += 1
+    return processed_files_with_name_change, processed_files_without_name_change
 
-def _save_csv_data_dict(key, data_dict):
-    today = datetime.datetime.now().strftime("%Y-%m-%dT%H%M")  # date: 2015-11-03T1935
-    dir_name = os.path.join(MERGED_CSV_LOCAL, today)
-    csv_file_name = os.path.join(MERGED_CSV_LOCAL, dir_name, key + '-' + today + '.csv')
+def _save_csv_dict_data(key, data_dict):
+    today = datetime.datetime.today().strftime("%Y-%m-%d")
+    now = datetime.datetime.now().strftime("%Y-%m-%dT%H%M")  # date:
+    # 2015-11-03T1935
+    dir_name = os.path.join(config.MERGED_CSV_LOCAL, today)
+    csv_file_name = os.path.join(config.MERGED_CSV_LOCAL, dir_name, key + '-' + now
+                                 + '.csv')
 
     if not os.path.isdir(dir_name):
         os.mkdir(dir_name)
@@ -172,22 +178,15 @@ def _save_csv_data_dict(key, data_dict):
         with open(csv_file_name, 'a', newline = '') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames = CSV_HEADERS)
             writer.writeheader()
-            writer.writerow(data_dict)
+            writer.writerows(data_dict)
 
 def merge_csv_from(pdf_list):
-    processed_files_with_name_change = 0
-    processed_files_without_name_change = 0
-
     print("Collecting data to dictionary:")
     dict_tic = timeit.default_timer()
-    # _add_data_to_dict(pdf, notes)
-    for pdf in pdf_list:
-        pdf_without_notes, notes = extract_notes_from(pdf)
-        if notes is not None:
-            _add_data_to_dict(pdf_without_notes, notes)
-            processed_files_with_name_change += 1
-        else:
-            processed_files_without_name_change+=1
+
+    processed_files_with_name_change, processed_files_without_name_change =\
+        _add_data_to_dict(pdf_list)
+
     dict_toc = timeit.default_timer()
     print("All data in dictionary!", "time (s): ",round(dict_toc - dict_tic, 4))
 
@@ -195,34 +194,39 @@ def merge_csv_from(pdf_list):
     print("Creating CSV's:")
     csv_tic = timeit.default_timer()
 
-    _save_csv_data_dict(ROWS_DICT.keys()[0],ROWS_DICT)
+    for key in ROWS_DICT.keys():
+        _save_csv_dict_data(key, ROWS_DICT[key])
 
     csv_toc = timeit.default_timer()
     print("CSV - created!","time (s): ", round(csv_toc-csv_tic,4))
 
     print("Copying CSV's:")
     copy_csv_tic = timeit.default_timer()
+
     move_merged_csv()
+
     copy_csv_toc = timeit.default_timer()
     print("CSV - copied!","time (s): ", round(copy_csv_toc-copy_csv_tic,4))
 
     print("Moving pdf's:")
-    move_pdf_tic =timeit.default_timer()
+    move_pdf_tic = timeit.default_timer()
+
     rename_and_move_pdf(pdf_list)
-    move_pdf_toc =timeit.default_timer()
+
+    move_pdf_toc = timeit.default_timer()
     print("Pdf - moved!", "time (s): ", round(move_pdf_toc - move_pdf_tic, 4))
 
     return processed_files_with_name_change + processed_files_without_name_change
 
 def move_merged_csv():
     today = datetime.date.today().isoformat()
-    remote_dir_name = os.path.join(MERGED_CSV_REMOTE,today)
+    remote_dir_name = os.path.join(config.MERGED_CSV_REMOTE, today)
     if not os.path.isdir(remote_dir_name):
         os.mkdir(remote_dir_name)
-    local_csv_list = os.listdir(os.path.join(MERGED_CSV_LOCAL,today))
+    local_csv_list = os.listdir(os.path.join(config.MERGED_CSV_LOCAL, today))
     for csv_name in local_csv_list:
-        shutil.copy(os.path.join(MERGED_CSV_LOCAL,today, csv_name),
-                os.path.join(MERGED_CSV_REMOTE,today,csv_name))
+        shutil.copy(os.path.join(config.MERGED_CSV_LOCAL, today, csv_name),
+                    os.path.join(config.MERGED_CSV_REMOTE, today, csv_name))
 
 # temp function we can eliminate this if we declare the dictionary with proper columns
 def _read_csv_values_from_template():
@@ -236,15 +240,15 @@ def _read_csv_values_from_template():
 if __name__ == "__main__":
     print("Creating pdf list:")
     pdf_list_tic = timeit.default_timer()
-    pdf_list = [p for p in sorted(os.listdir(PREPPED_PDF_PATH)) if
+    pdf_list = [p for p in sorted(os.listdir(config.PREPPED_PDF_PATH)) if
                 p.upper().startswith("U") and p.lower().endswith('.pdf')]
     pdf_list_toc = timeit.default_timer()
     print("Pdf list - created!", "time (s): ", round(pdf_list_toc -  pdf_list_tic,4))
     files_to_process = len(pdf_list)
     print("Number of files to process", files_to_process)
-    proccessed_files = merge_csv_from(pdf_list)
+    processed_files = merge_csv_from(pdf_list)
     print("Number of files to process", files_to_process)
-    print("Files proccessed: ", proccessed_files)
+    print("Files processed: ", processed_files)
 
     os.system("pause")
 
