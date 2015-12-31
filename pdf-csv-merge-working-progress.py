@@ -164,11 +164,9 @@ def _add_data_to_dict(pdf, notes):
 def _add_data_to_csv(key, data):
     today = datetime.date.today().isoformat()
     dir_name = os.path.join(MERGED_CSV_LOCAL,today)
-    if os.path.isdir(dir_name):
-        _save_csv_data(dir_name, key, data)
-    else:
+    if not os.path.isdir(dir_name):
         os.mkdir(dir_name)
-        _save_csv_data(dir_name, key, data)
+    _save_csv_data(dir_name, key, data)
 
 def _save_csv_data(dir_name, key, data):
     today = datetime.datetime.now().strftime("%Y-%m-%dT%H%M")# date: 2015-11-03T1935
@@ -277,7 +275,7 @@ if __name__ == "__main__":
 
 
 # rid off csv completly and check processing time
-# repair adding an ONESIDED notes when group onesided
+
 
 # after creating all csv and copy them to NAS create project from merged csv
 # move merged csv to done folder
