@@ -110,12 +110,12 @@ def _parse_notes(notes):
 
 
 def _merge_notes_for_without_csv(pdf, notes):
-    row = {'NAME':'', 'KINDS':'', 'QUANTITY': '', 'WIDTH': '', 'HEIGHT': '',
+    row = {'NAME':'', 'KINDS':'1', 'QUANTITY': '', 'WIDTH': '', 'HEIGHT': '',
            'SIDE 1 COLORS': '', 'SIDE 2 COLORS': '',
            'CONTENT': '', 'PRODUCT GROUP': '', 'COMPANY': '',
            'FIRST NAME': '', 'FAMILY NAME': '', 'DESCRIPTION': '', 'NOTES': '',
-           'DUE DATE': '', 'GRAIN': '', 'TOP OFFCUT':'', 'LEFT OFFCUT': '',
-           'BOTTOM OFFCUT': '', 'RIGHT OFFCUT': '', 'PRIORITY': ''}
+           'DUE DATE': '', 'GRAIN': '', 'TOP OFFCUT':'0', 'LEFT OFFCUT': '0',
+           'BOTTOM OFFCUT': '0', 'RIGHT OFFCUT': '0', 'PRIORITY': '5'}
 
     row['WIDTH'] = notes["width"]
     row['HEIGHT'] = notes["height"]
