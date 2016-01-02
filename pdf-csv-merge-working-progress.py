@@ -110,7 +110,13 @@ def _parse_notes(notes):
 
 
 def _merge_notes_for_without_csv(pdf, notes):
-    row = _read_csv_values_from_template()
+    row = {'NAME':'', 'KINDS':'', 'QUANTITY': '', 'WIDTH': '', 'HEIGHT': '',
+           'SIDE 1 COLORS': '', 'SIDE 2 COLORS': '',
+           'CONTENT': '', 'PRODUCT GROUP': '', 'COMPANY': '',
+           'FIRST NAME': '', 'FAMILY NAME': '', 'DESCRIPTION': '', 'NOTES': '',
+           'DUE DATE': '', 'GRAIN': '', 'TOP OFFCUT':'', 'LEFT OFFCUT': '',
+           'BOTTOM OFFCUT': '', 'RIGHT OFFCUT': '', 'PRIORITY': ''}
+
     row['WIDTH'] = notes["width"]
     row['HEIGHT'] = notes["height"]
     if "group" in notes:
@@ -247,16 +253,6 @@ def move_merged_csv():
                     os.path.join(config.MERGED_CSV_REMOTE, today, csv_name))
 
 
-# temp function we can eliminate this if we declare the dictionary with proper columns
-def _read_csv_values_from_template():
-    # extract number from pdf name
-    csv_path_and_name = os.path.join(config.DIR, "csv_template.csv")
-    with open(csv_path_and_name) as csv_file:
-        reader = csv.DictReader(csv_file, delimiter = ',',
-                                quoting = csv.QUOTE_ALL)
-        for row in reader:
-            return row
-
 
 if __name__ == "__main__":
     print("Creating pdf list:")
@@ -274,8 +270,6 @@ if __name__ == "__main__":
 
     os.system("pause")
 
-
-# rid off csv completly and check processing time
 
 
 # after creating all csv and copy them to NAS create project from merged csv
