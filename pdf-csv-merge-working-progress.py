@@ -23,30 +23,6 @@ ROWS_DICT = {}
 config = configuration.Debug
 
 
-def _read_csv_values_for(pdf_name):
-    # extract number from pdf name
-    csv_name = _return_csv_name_for(pdf_name)
-    csv_path_and_name = os.path.join(config.SOURCE_CSV_PATH, csv_name)
-    with open(csv_path_and_name) as csv_file:
-        reader = csv.DictReader(csv_file, delimiter = ',',
-                                quoting = csv.QUOTE_ALL)
-        for row in reader:
-            return row
-
-
-# Check what will happen if there will be no csv file for a pdf
-def _return_csv_name_for(pdf_name):
-    csv_list = sorted(os.listdir(config.SOURCE_CSV_PATH))
-    for file in csv_list:
-        if file.endswith('csv'):
-            name = os.path.split(pdf_name)[1]
-            pdf_name_number = name.split("-")[0]
-            csv_file_number = os.path.split(file)[1]
-            csv_file_number = csv_file_number.split("-")[0]
-            if csv_file_number == pdf_name_number:
-                return file
-
-
 def _delete_prepp_notes_from(pdf):
     text_to_replace = _find_prepp_notes(pdf)
     if text_to_replace:
