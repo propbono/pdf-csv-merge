@@ -74,20 +74,18 @@ def _parse_notes(notes):
             notes["stock"] += "1000"
 
     check_group(notes)
-
-    if notes["group"] == "ONESIDED":
-        notes["notes"] = notes["group"] + " " + notes["notes"]
+    add_group_to_notes(notes)
 
     if notes["stock"] == "uv" or notes["stock"] == "u": # First save the current group to notes if exists then replace
-        if notes["group"] != '':
-            notes["notes"] += notes["group"] + " "
         notes["group"] = "UV"
     if notes["stock"] == "matte" or notes["stock"] == "m" :
-        if notes["group"] != '':
-            notes["notes"] += notes["group"] + " "
         notes["group"] = "MATTE"
 
     return notes
+
+
+def add_group_to_notes(notes):
+    notes["notes"] = notes["group"] + " " + notes["notes"]
 
 
 def check_group(notes):
@@ -107,7 +105,6 @@ def check_group(notes):
         notes["group"] = "MATTE"
     if notes["group"] == "N":
         notes["group"] = "NOAQ"
-
 
 def extract_notes_from(pdf):
 # SampleName(3.5x2-16pt1000-g:sameday-n:diecut PocketFolder 4 inch)-1000.pdf
