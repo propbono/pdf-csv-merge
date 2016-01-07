@@ -52,6 +52,23 @@ def _parse_notes(notes):
         else:
             notes["stock"] += "1000"
 
+    check_group(notes)
+    add_group_to_notes(notes)
+
+    if notes["stock"] == "uv" or notes["stock"] == "u": # First save the current group to notes if exists then replace
+        notes["group"] = "UV"
+    if notes["stock"] == "matte" or notes["stock"] == "m" :
+        notes["group"] = "MATTE"
+
+    return notes
+
+
+def add_group_to_notes(notes):
+    notes["notes"] = notes["group"] + " " + notes["notes"]
+
+
+def check_group(notes):
+
     if notes["group"] == "D":
         notes["group"] = "DIECUT"
     if notes["group"] == "O":
@@ -69,20 +86,6 @@ def _parse_notes(notes):
     if notes["group"] == "N":
         notes["group"] = "NOAQ"
 
-    if notes["group"] == "ONESIDED":
-        notes["notes"] = notes["group"] + " " + notes["notes"]
-
-    # First save the current group to notes if exists then replace
-    if notes["stock"] == "uv" or notes["stock"] == "u":
-        if notes["group"] != '':
-            notes["notes"] += notes["group"] + " "
-        notes["group"] = "UV"
-    if notes["stock"] == "matte" or notes["stock"] == "m":
-        if notes["group"] != '':
-            notes["notes"] += notes["group"] + " "
-        notes["group"] = "MATTE"
-
-    return notes
 
 
 def _merge_notes_for_without_csv(pdf, notes):
