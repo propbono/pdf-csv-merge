@@ -229,7 +229,6 @@ def move_merged_csv():
                     os.path.join(config.MERGED_CSV_REMOTE, today, csv_name))
 
 
-
 if __name__ == "__main__":
     print("Creating pdf list:")
     pdf_list_tic = timeit.default_timer()
