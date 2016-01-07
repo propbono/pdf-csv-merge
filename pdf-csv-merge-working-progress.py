@@ -20,7 +20,7 @@ CSV_HEADERS = ['NAME', 'KINDS', 'QUANTITY', 'WIDTH', 'HEIGHT', 'SIDE 1 COLORS',
 ROWS_DICT = {}
 
 # Change to config.Working in production
-config = configuration.Debug
+config = configuration.Working
 
 
 def _delete_prepp_notes_from(pdf):
