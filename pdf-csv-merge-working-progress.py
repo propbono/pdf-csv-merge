@@ -17,10 +17,45 @@ CSV_HEADERS = ['NAME', 'KINDS', 'QUANTITY', 'WIDTH', 'HEIGHT', 'SIDE 1 COLORS',
                'FIRST NAME', 'FAMILY NAME', 'DESCRIPTION', 'NOTES', 'DUE DATE',
                'GRAIN', 'TOP OFFCUT', 'LEFT OFFCUT', 'BOTTOM OFFCUT',
                'RIGHT OFFCUT', 'PRIORITY']
-ROWS_DICT = {}
+
+CSV_HEADERS_FLAT = ["comment", "Name", "Quantity", "Width", "Height",
+                    "StockVendor", "StockName", "StockWeight", "IGNORED1",
+                    "IGNORED2", "Priority", "TopOffcut", "LeftOffcut",
+                    "BottomOffcut", "RightOffcut", "ProductID",
+                    "Description", "Notes", "DueDate", "CompanyName",
+                    "FirstName", "LastName", "ContentFile", "PageColor1",
+                    "PageColor2", "ProductGroup", "Grain", "BleedsTop",
+                    "BleedsLeft", "BleedsBottom", "BleedsRight",
+                    "FolioSide1", "FolioSide2"]
+
+CSV_HEADERS_BOUND_SELF = ["comment", "Name", "Quantity", "Width", "Height",
+                          "StockVendor", "StockName", "StockWeight",
+                          "IGNORED0", "TextPageCount", "LargestTextComponent",
+                          "BindingMachine", "IGNORED1", "IGNORED2", "IGNORED3",
+                          "ProductID", "Description", "Notes", "DueDate",
+                          "CompanyName", "FirstName", "LastName",
+                          "ContentFile", "IGNORED4", "INGORED5",
+                          "PageColorName", "IGNORED6", "BleedsTop",
+                          "BleedsLeft", "BleedsBottom", "BleedsRight",
+                          "FolioPattern", "TextFolds", "IGNORED7",
+                          "BindingNumberUp", "1stUpOrientation",
+                          "NUpOrientation", "Grain"]
+# for future consideration
+"""CSV_HEADERS_FOLDED = ["comment", "Name", "Quantity", "Width", "Height",
+                      "StockVendor", "StockName", "StockWeight", "FoldCatalog",
+                      "IGNORED", "Priority", "TopOffcut", "LeftOffcut",
+                      "BottomOffcut", "RightOffcut", "Product MIS ID",
+                      "Description", "Notes", "DueDate", "CompanyName",
+                      "FirstName", "LastName", "ContentFile", "PageColor1",
+                      "PageColor2", "ProductGroup", "Grain", "BleedsTop",
+                      "BleedsLeft", "BleedsBottom", "BleedsRight",
+                      "FolioPattern", "IGNORED", "CombinePages"]"""
+
+ROWS_DICT_FLAT = {}
+ROWS_DICT_BOUND = {}
 
 # Change to config.Working in production
-config = configuration.Working
+config = configuration.Debug
 
 
 def _delete_prepp_notes_from(pdf):
@@ -36,7 +71,6 @@ def _move_pdf_to_press_ready_pdf(name, new_name):
                 os.path.join(config.PRESS_READY_PDF_PATH, new_name))
 
 
-# Add regular expressions to remove characters
 def _find_prepp_notes(pdf):
     text_to_replace = re.findall(r'\(.*\)', pdf)
     if text_to_replace:
@@ -46,29 +80,86 @@ def _find_prepp_notes(pdf):
 
 
 def _parse_notes(notes):
-    if notes["stock"] == "16pt":
-        if int(notes["quantity"]) > 1000:
-            notes["stock"] += "5000"
-        else:
-            notes["stock"] += "1000"
+    _check_and_correct_stock(notes)
+    _check_and_crorrect_group(notes)
+    _add_group_to_notes(notes)
+    _check_and_crorrect_type(notes)
 
-    check_group(notes)
-    add_group_to_notes(notes)
-
-    if notes["stock"] == "uv" or notes["stock"] == "u": # First save the current group to notes if exists then replace
+    if notes["stock"] == "uv" or notes[
+        "stock"] == "u":  # First save the current group to notes if exists then replace
         notes["group"] = "UV"
-    if notes["stock"] == "matte" or notes["stock"] == "m" :
+    if notes["stock"] == "matte" or notes["stock"] == "m":
         notes["group"] = "MATTE"
 
     return notes
 
 
-def add_group_to_notes(notes):
+def _check_and_correct_stock(notes):
+    if notes["stock"] == "16pt":
+        if int(notes["quantity"]) > 1000:
+            notes["stock"] += "5000"
+        else:
+            notes["stock"] += "1000"
+        notes["stockname"] = "16pt-Cover"
+        notes["stockweight"] = "338"
+
+    if notes["stock"] == "100lb":
+        notes["stockname"] = "100lb-Text"
+        notes["stockweight"] = "150"
+
+    if notes["stock"] == "80lb":
+        notes["stockname"] = "80lb-Text"
+        notes["stockweight"] = "115"
+
+    if notes["stock"] == "70lb":
+        notes["stockname"] = "70lb-Text"
+        notes["stockweight"] = "95"
+
+    if notes["stock"] == "60lb":
+        notes["stockname"] = "60lb-Text"
+        notes["stockweight"] = "90"
+
+
+    if notes["stock"] == "18pt":
+        notes["stockname"] = "18pt-Matte"
+        notes["stockweight"] = "350"
+
+    if notes["stock"] == "10pt":
+        notes["stockname"] = "10pt-Cover"
+        notes["stockweight"] = "260"
+
+    if notes["stock"] == "12pt":
+        notes["stockname"] = "12pt-Cover"
+        notes["stockweight"] = "278"
+
+    if notes["stock"] == "14pt":
+        notes["stockname"] = "14pt-Cover"
+        notes["stockweight"] = "308"
+
+    if notes["stock"] == "8pt":
+        notes["stockname"] = "8pt-Cover"
+        notes["stockweight"] = "260"
+
+    if notes["stock"] == "70lboffset":
+        notes["stockname"] = "70lb-Offset"
+        notes["stockweight"] = "95"
+
+    if notes["stock"] == "60lboffset":
+        notes["stockname"] = "60lb-Offset"
+        notes["stockweight"] = "90"
+
+    if notes["stock"] == "50lboffset":
+        notes["stockname"] = "50lb-Offset"
+        notes["stockweight"] = "74"
+
+    if notes["pages"] != "":
+        notes["stock"] += "magazine"
+
+
+def _add_group_to_notes(notes):
     notes["notes"] = notes["group"] + " " + notes["notes"]
 
-
-def check_group(notes):
-
+def _check_and_crorrect_group(notes):
     if notes["group"] == "D":
         notes["group"] = "DIECUT"
     if notes["group"] == "O":
@@ -86,32 +177,17 @@ def check_group(notes):
     if notes["group"] == "N":
         notes["group"] = "NOAQ"
 
-
-
-def _merge_notes_for_without_csv(pdf, notes):
-    row = {'NAME':'', 'KINDS':'1', 'QUANTITY': '', 'WIDTH': '', 'HEIGHT': '',
-           'SIDE 1 COLORS': '', 'SIDE 2 COLORS': '',
-           'CONTENT': '', 'PRODUCT GROUP': '', 'COMPANY': '',
-           'FIRST NAME': '', 'FAMILY NAME': '', 'DESCRIPTION': '', 'NOTES': '',
-           'DUE DATE': '', 'GRAIN': '', 'TOP OFFCUT':'0', 'LEFT OFFCUT': '0',
-           'BOTTOM OFFCUT': '0', 'RIGHT OFFCUT': '0', 'PRIORITY': '5'}
-
-    row['WIDTH'] = notes["width"]
-    row['HEIGHT'] = notes["height"]
-    if "group" in notes:
-        row['PRODUCT GROUP'] = notes["group"]
-    if "notes" in notes:
-        row['NOTES'] = notes["notes"]
-    row['QUANTITY'] = notes["quantity"]
-    row['CONTENT'] = pdf
-    row['NAME'] = pdf[:-4]
-    row['DESCRIPTION'] = pdf.split('-')[0]
-    return row
-
+def _check_and_crorrect_type(notes):
+    if notes["pages"] != "":
+        notes["type"] = "BOUND"
+    else:
+        notes["type"] = "FLAT"
 
 def extract_notes_from(pdf):
-    notes = {'width': '', 'height': '', "stock": '', 'quantity': '',
-             'notes': '', 'group': ''}
+    "LixarAsafKarpel(3.5x2-18pt-g;u-n;somerhing-p;36)-500.pdf"
+    notes = {'width': '', 'height': '', "stock": '', 'stockname':'',
+             "stockweight":'', 'quantity': '',
+             'notes': '', 'group': '', 'type':'', 'pages':''}
     notes_from_pdf = _find_prepp_notes(pdf)
     if notes_from_pdf:
         notes_from_pdf = notes_from_pdf[0].lstrip('(').rstrip(')').split('-')
@@ -125,6 +201,8 @@ def extract_notes_from(pdf):
                 notes["notes"] = n.lstrip("n;")
             elif _operator.contains(n, "g;"):
                 notes["group"] = n.lstrip("g;").upper()
+            elif _operator.contains(n, "p;"):
+                notes["pages"] = n.lstrip("p;")
 
     if notes['width'] != '':
         notes = _parse_notes(notes)
@@ -137,6 +215,62 @@ def extract_notes_from(pdf):
 def _copy_pdf_to_done_folder(pdf):
     shutil.copyfile(os.path.join(config.PREPPED_PDF_PATH, pdf), os.path.join(
             config.PREPPED_PDF_DONE_PATH, pdf))
+
+
+def _merge_notes_for_without_csv(pdf, notes):
+    if notes['type'] == "FLAT":
+
+        row_flat = {"comment": "MetrixCSV2.0_FLAT", "Name": pdf[:-4],
+                    "Quantity": notes["quantity"], "Width": notes["width"],
+                    "Height": notes["height"], "StockVendor": "PG",
+                    "StockName": notes["stockname"],
+                    "StockWeight": notes["stockweight"], "IGNORED1": '',
+                    "IGNORED2": '', "Priority": '5', "TopOffcut": '0',
+                    "LeftOffcut": '0', "BottomOffcut": '0', "RightOffcut": '0',
+                    "ProductID": '', "Description": pdf.split('-')[0],
+                    "Notes": '', "DueDate": '', "CompanyName": pdf.split('-')[2],
+                    "FirstName": '', "LastName": '', "ContentFile": '',
+                    "PageColor1": '', "PageColor2": '',
+                    "ProductGroup": ', "Grain":', "BleedsTop": '0.0625',
+                    "BleedsLeft": '0.0625', "BleedsBottom": '0.0625', "BleedsRight": '0.0625',
+                    "FolioSide1": "Front", "FolioSide2": "Back"}
+        if "notes" in notes:
+            row_flat["Notes"] = notes["notes"]
+        row_flat["ContentFile"] = pdf
+        if "group" in notes:
+            row_flat["ProductGroup"] = notes["group"]
+
+
+        return row_flat
+    else:
+        row_bound = {"comment": "MetrixCSV2.0_BOUND_SELF_COVER", "Name": pdf[:-4],
+               "Quantity": notes["quantity"], "Width": notes["width"], "Height":
+                   notes["height"], "StockVendor": "PG",
+               "StockName": notes["stockname"], "StockWeight": notes["stockweight"],
+                "IGNORED0": "", "TextPageCount": "", "LargestTextComponent": "4",
+               "BindingMachine": "DUPLO", "IGNORED1": "", "IGNORED2": "",
+               "IGNORED3": "", "ProductID": "", "Description": pdf.split('-')[
+                0], "Notes": "",
+               "DueDate": "", "CompanyName": pdf.split('-')[2], "FirstName": "",
+               "LastName": "", "ContentFile": pdf, "IGNORED4": "",
+               "INGORED5": "", "PageColorName": "Cyan, Magenta, Yellow, Black", "IGNORED6": "",
+               "BleedsTop": "0.0625", "BleedsLeft": "0.0625", "BleedsBottom": "0.0625",
+               "BleedsRight": "0.0625", "FolioPattern": "",
+               "TextFolds": "",
+               "IGNORED7": "", "BindingNumberUp": "", "1stUpOrientation": "HeadToJog",
+               "NUpOrientation": "", "Grain": ""}
+
+        if "pages" in notes:
+            row_bound["TextPageCount"] = notes["pages"]
+        row_bound["ProductID"] = ''  # pdf.split('-')[0] #this needs to be unique
+        if "group" in notes:
+            row_bound["Notes"] = notes["group"]
+        if "notes" in notes:
+            row_bound["Notes"] += " " + notes["notes"]
+
+
+
+        return row_bound
 
 
 def rename_and_move_pdf(pdf_list):
@@ -155,7 +289,10 @@ def _add_data_to_dict(pdf_list):
         if notes is not None:
             data = _merge_notes_for_without_csv(pdf_without_notes, notes)
             key = notes["stock"]
-            ROWS_DICT.setdefault(key, []).append(data)
+            if notes["type"] == "FLAT":
+                ROWS_DICT_FLAT.setdefault(key, []).append(data)
+            else:
+                ROWS_DICT_BOUND.setdefault(key,[]).append(data)
             print(pdf, " - added!")
             processed_files_with_name_change += 1
         else:
@@ -163,20 +300,19 @@ def _add_data_to_dict(pdf_list):
     return processed_files_with_name_change, processed_files_without_name_change
 
 
-def _save_csv_dict_data(key, data_dict):
+def _save_csv_dict_data(key, data_dict,headers):
     today = datetime.datetime.today().strftime("%Y-%m-%d")
     now = datetime.datetime.now().strftime("%Y-%m-%dT%H%M")  # date:
     # 2015-11-03T1935
     dir_name = os.path.join(config.MERGED_CSV_LOCAL, today)
     csv_file_name = os.path.join(config.MERGED_CSV_LOCAL, dir_name,
-                                 key + '-' + now
-                                 + '.csv')
+                                 key + '-' + now + '.csv')
 
     if not os.path.isdir(dir_name):
         os.mkdir(dir_name)
     if not os.path.exists(csv_file_name):
         with open(csv_file_name, 'a', newline = '') as csv_file:
-            writer = csv.DictWriter(csv_file, fieldnames = CSV_HEADERS)
+            writer = csv.DictWriter(csv_file, fieldnames = headers)
             writer.writeheader()
             writer.writerows(data_dict)
 
@@ -185,8 +321,8 @@ def merge_csv_from(pdf_list):
     print("Collecting data to dictionary:")
     dict_tic = timeit.default_timer()
 
-    processed_files_with_name_change, processed_files_without_name_change = \
-        _add_data_to_dict(pdf_list)
+    processed_files_with_name_change, \
+    processed_files_without_name_change = _add_data_to_dict(pdf_list)
 
     dict_toc = timeit.default_timer()
     print("All data in dictionary!", "time (s): ",
@@ -196,8 +332,10 @@ def merge_csv_from(pdf_list):
     print("Creating CSV's:")
     csv_tic = timeit.default_timer()
 
-    for key in ROWS_DICT.keys():
-        _save_csv_dict_data(key, ROWS_DICT[key])
+    for key in ROWS_DICT_FLAT.keys():
+        _save_csv_dict_data(key, ROWS_DICT_FLAT[key],CSV_HEADERS_FLAT)
+    for key in ROWS_DICT_BOUND.keys():
+        _save_csv_dict_data(key, ROWS_DICT_BOUND[key],CSV_HEADERS_BOUND_SELF)
 
     csv_toc = timeit.default_timer()
     print("CSV - created!", "time (s): ", round(csv_toc - csv_tic, 4))
