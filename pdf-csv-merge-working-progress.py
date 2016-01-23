@@ -55,7 +55,7 @@ ROWS_DICT_FLAT = {}
 ROWS_DICT_BOUND = {}
 
 # Change to config.Working in production
-config = configuration.Debug
+config = configuration.Working
 
 
 def _delete_prepp_notes_from(pdf):
@@ -100,6 +100,7 @@ def _check_and_correct_stock(notes):
             notes["stock"] += "5000"
         else:
             notes["stock"] += "1000"
+    if  _operator.contains(notes["stock"], "16pt") or _operator.contains(notes["stock"], "uv") or _operator.contains(notes["stock"], "matte"):
         notes["stockname"] = "16pt-Cover"
         notes["stockweight"] = "338"
 
@@ -152,8 +153,19 @@ def _check_and_correct_stock(notes):
         notes["stockname"] = "50lb-Offset"
         notes["stockweight"] = "74"
 
+    if notes["stock"] == "qm":
+        notes["stockname"] = "QM"
+        notes["stockweight"] = "20"
+
+    if notes["stock"] == "digital":
+        notes["stockname"] = "Digital"
+        notes["stockweight"] = "150"
+
     if notes["pages"] != "":
         notes["stock"] += "magazine"
+        notes["notes"] += " BOOKLET"
+
+
 
 
 def _add_group_to_notes(notes):
