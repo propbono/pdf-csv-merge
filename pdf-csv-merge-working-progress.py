@@ -54,6 +54,7 @@ ROWS_DICT_FLAT = {}
 ROWS_DICT_BOUND = {}
 
 config = Configuration.type
+clean = Move()
 
 def _merge_notes_for_without_csv(pdf, notes):
     if notes['type'] == "FLAT":
@@ -114,8 +115,9 @@ def _add_data_to_dict(pdf_list):
     processed_files_with_name_change = 0
     processed_files_without_name_change = 0
     for pdf in pdf_list:
+        notes = Notes()
         try:
-            pdf_without_notes, notes = Notes.extract_notes_from(pdf)
+            pdf_without_notes, notes = notes.extract_notes_from(pdf)
         except None:
             processed_files_without_name_change += 1
         else:
@@ -161,7 +163,7 @@ def merge_csv_from(pdf_list):
     print("All data in dictionary!", "time (s): ",
           round(dict_toc - dict_tic, 4))
 
-    # _add_data_to_csv(pdf,notes) -crash here
+
     print("Creating CSV's:")
     csv_tic = timeit.default_timer()
 
@@ -173,10 +175,11 @@ def merge_csv_from(pdf_list):
     csv_toc = timeit.default_timer()
     print("CSV - created!", "time (s): ", round(csv_toc - csv_tic, 4))
 
+
     print("Copying CSV's:")
     copy_csv_tic = timeit.default_timer()
 
-    move_merged_csv()
+    clean.move_merged_csv()
 
     copy_csv_toc = timeit.default_timer()
     print("CSV - copied!", "time (s): ", round(copy_csv_toc - copy_csv_tic, 4))
@@ -184,7 +187,7 @@ def merge_csv_from(pdf_list):
     print("Moving pdf's:")
     move_pdf_tic = timeit.default_timer()
 
-    rename_and_move_pdf(pdf_list)
+    clean.rename_and_move_pdf(pdf_list)
 
     move_pdf_toc = timeit.default_timer()
     print("Pdf - moved!", "time (s): ", round(move_pdf_toc - move_pdf_tic, 4))
