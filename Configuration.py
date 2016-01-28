@@ -2,9 +2,8 @@ import os
 import sys
 
 class Configuration:
+        type = Debug
 
-    def __init__(self):
-        self.type = Debug
 
 class Debug:
     # First check what pdf files we have in the folder
