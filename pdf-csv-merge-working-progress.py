@@ -6,10 +6,11 @@ import datetime
 
 import os
 import csv
-import re
 import shutil
 import timeit
 import configuration
+
+from Notes import *
 
 
 CSV_HEADERS = ['NAME', 'KINDS', 'QUANTITY', 'WIDTH', 'HEIGHT', 'SIDE 1 COLORS',
@@ -58,164 +59,13 @@ ROWS_DICT_BOUND = {}
 config = configuration.Debug
 
 
-def _delete_prepp_notes_from(pdf):
-    text_to_replace = _find_prepp_notes(pdf)
-    if text_to_replace:
-        return pdf.replace(text_to_replace[0], '')
-    else:
-        return pdf
-
-
 def _move_pdf_to_press_ready_pdf(name, new_name):
     shutil.move(os.path.join(config.PREPPED_PDF_PATH, name),
                 os.path.join(config.PRESS_READY_PDF_PATH, new_name))
 
-
-def _find_prepp_notes(pdf):
-    text_to_replace = re.findall(r'\(.*\)', pdf)
-    if text_to_replace:
-        return text_to_replace
-    else:
-        return {}
-
-
-def _parse_notes(notes):
-    _check_and_correct_stock(notes)
-    _check_and_crorrect_group(notes)
-    _add_group_to_notes(notes)
-    _check_and_crorrect_type(notes)
-
-    if notes["stock"] == "uv" or notes[
-        "stock"] == "u":  # First save the current group to notes if exists then replace
-        notes["group"] = "UV"
-    if notes["stock"] == "matte" or notes["stock"] == "m":
-        notes["group"] = "MATTE"
-
-    return notes
-
-
-def _check_and_correct_stock(notes):
-    if notes["stock"] == "16pt":
-        if int(notes["quantity"]) > 1000:
-            notes["stock"] += "5000"
-        else:
-            notes["stock"] += "1000"
-        notes["stockname"] = "16pt-Cover"
-        notes["stockweight"] = "338"
-
-    if notes["stock"] == "100lb":
-        notes["stockname"] = "100lb-Text"
-        notes["stockweight"] = "150"
-
-    if notes["stock"] == "80lb":
-        notes["stockname"] = "80lb-Text"
-        notes["stockweight"] = "115"
-
-    if notes["stock"] == "70lb":
-        notes["stockname"] = "70lb-Text"
-        notes["stockweight"] = "95"
-
-    if notes["stock"] == "60lb":
-        notes["stockname"] = "60lb-Text"
-        notes["stockweight"] = "90"
-
-
-    if notes["stock"] == "18pt":
-        notes["stockname"] = "18pt-Matte"
-        notes["stockweight"] = "350"
-
-    if notes["stock"] == "10pt":
-        notes["stockname"] = "10pt-Cover"
-        notes["stockweight"] = "260"
-
-    if notes["stock"] == "12pt":
-        notes["stockname"] = "12pt-Cover"
-        notes["stockweight"] = "278"
-
-    if notes["stock"] == "14pt":
-        notes["stockname"] = "14pt-Cover"
-        notes["stockweight"] = "308"
-
-    if notes["stock"] == "8pt":
-        notes["stockname"] = "8pt-Cover"
-        notes["stockweight"] = "260"
-
-    if notes["stock"] == "70lboffset":
-        notes["stockname"] = "70lb-Offset"
-        notes["stockweight"] = "95"
-
-    if notes["stock"] == "60lboffset":
-        notes["stockname"] = "60lb-Offset"
-        notes["stockweight"] = "90"
-
-    if notes["stock"] == "50lboffset":
-        notes["stockname"] = "50lb-Offset"
-        notes["stockweight"] = "74"
-
-    if notes["pages"] != "":
-        notes["stock"] += "magazine"
-
-
-def _add_group_to_notes(notes):
-    notes["notes"] = notes["group"] + " " + notes["notes"]
-
-def _check_and_crorrect_group(notes):
-    if notes["group"] == "D":
-        notes["group"] = "DIECUT"
-    if notes["group"] == "O":
-        notes["group"] = "ONESIDED"
-    if notes["group"] == "S":
-        notes["group"] = "SAMEDAY"
-    if notes["group"] == "U":
-        notes["group"] = "URGENT"
-    if notes["group"] == "R":
-        notes["group"] = "ROUNDCORNER"
-    if notes["group"] == "P":
-        notes["group"] = "PRESSSAMPLE"
-    if notes["group"] == "M":
-        notes["group"] = "MATTE"
-    if notes["group"] == "N":
-        notes["group"] = "NOAQ"
-
-def _check_and_crorrect_type(notes):
-    if notes["pages"] != "":
-        notes["type"] = "BOUND"
-    else:
-        notes["type"] = "FLAT"
-
-def extract_notes_from(pdf):
-    "LixarAsafKarpel(3.5x2-18pt-g;u-n;somerhing-p;36)-500.pdf"
-    notes = {'width': '', 'height': '', "stock": '', 'stockname':'',
-             "stockweight":'', 'quantity': '',
-             'notes': '', 'group': '', 'type':'', 'pages':''}
-    notes_from_pdf = _find_prepp_notes(pdf)
-    if notes_from_pdf:
-        notes_from_pdf = notes_from_pdf[0].lstrip('(').rstrip(')').split('-')
-        notes["width"] = notes_from_pdf[0].split('x')[0]
-        notes["height"] = notes_from_pdf[0].split('x')[1]
-        notes["stock"] = notes_from_pdf[1].lower()
-        notes["quantity"] = pdf.split('-')[-1].rstrip(".pdf")
-
-        for n in notes_from_pdf[2:]:
-            if _operator.contains(n, "n;"):
-                notes["notes"] = n.lstrip("n;")
-            elif _operator.contains(n, "g;"):
-                notes["group"] = n.lstrip("g;").upper()
-            elif _operator.contains(n, "p;"):
-                notes["pages"] = n.lstrip("p;")
-
-    if notes['width'] != '':
-        notes = _parse_notes(notes)
-        pdf = _delete_prepp_notes_from(pdf)
-        return pdf, notes
-    else:
-        return pdf, None
-
-
 def _copy_pdf_to_done_folder(pdf):
     shutil.copyfile(os.path.join(config.PREPPED_PDF_PATH, pdf), os.path.join(
             config.PREPPED_PDF_DONE_PATH, pdf))
-
 
 def _merge_notes_for_without_csv(pdf, notes):
     if notes['type'] == "FLAT":
@@ -272,7 +122,6 @@ def _merge_notes_for_without_csv(pdf, notes):
 
         return row_bound
 
-
 def rename_and_move_pdf(pdf_list):
     for i, pdf in enumerate(pdf_list, 1):
         new_pdf = _delete_prepp_notes_from(pdf)
@@ -280,12 +129,11 @@ def rename_and_move_pdf(pdf_list):
         _move_pdf_to_press_ready_pdf(pdf, new_pdf)
         print(i, " *" * i)
 
-
 def _add_data_to_dict(pdf_list):
     processed_files_with_name_change = 0
     processed_files_without_name_change = 0
     for pdf in pdf_list:
-        pdf_without_notes, notes = extract_notes_from(pdf)
+        pdf_without_notes, notes = Notes.extract_notes_from(pdf)
         if notes is not None:
             data = _merge_notes_for_without_csv(pdf_without_notes, notes)
             key = notes["stock"]
