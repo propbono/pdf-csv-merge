@@ -133,8 +133,11 @@ def _add_data_to_dict(pdf_list):
     processed_files_with_name_change = 0
     processed_files_without_name_change = 0
     for pdf in pdf_list:
-        pdf_without_notes, notes = Notes.extract_notes_from(pdf)
-        if notes is not None:
+        try:
+            pdf_without_notes, notes = Notes.extract_notes_from(pdf)
+        except None:
+            processed_files_without_name_change += 1
+        else:
             data = _merge_notes_for_without_csv(pdf_without_notes, notes)
             key = notes["stock"]
             if notes["type"] == "FLAT":
@@ -143,9 +146,9 @@ def _add_data_to_dict(pdf_list):
                 ROWS_DICT_BOUND.setdefault(key,[]).append(data)
             print(pdf, " - added!")
             processed_files_with_name_change += 1
-        else:
-            processed_files_without_name_change += 1
-    return processed_files_with_name_change, processed_files_without_name_change
+        finally:
+            return processed_files_with_name_change, \
+                   processed_files_without_name_change
 
 
 def _save_csv_dict_data(key, data_dict,headers):
