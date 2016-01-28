@@ -1,15 +1,13 @@
 #!/usr/bin/python
 
 # __author__ = 'propbono@gmail.com'
-import _operator
-import datetime
-
-import os
 import csv
-import shutil
+import datetime
+import os
 import timeit
-import configuration
 
+from Configuration import Configuration
+from Move import *
 from Notes import *
 
 
@@ -55,24 +53,7 @@ CSV_HEADERS_BOUND_SELF = ["comment", "Name", "Quantity", "Width", "Height",
 ROWS_DICT_FLAT = {}
 ROWS_DICT_BOUND = {}
 
-# Change to config.Working in production
-config = configuration.Debug
-
-
-def _move_pdf_to_press_ready_pdf(name, new_name):
-    shutil.move(os.path.join(config.PREPPED_PDF_PATH, name),
-                os.path.join(config.PRESS_READY_PDF_PATH, new_name))
-
-def _copy_pdf_to_done_folder(pdf):
-    shutil.copyfile(os.path.join(config.PREPPED_PDF_PATH, pdf), os.path.join(
-            config.PREPPED_PDF_DONE_PATH, pdf))
-
-def rename_and_move_pdf(pdf_list):
-    for i, pdf in enumerate(pdf_list, 1):
-        new_pdf = Notes.delete_prepp_notes_from(pdf)
-        _copy_pdf_to_done_folder(pdf)
-        _move_pdf_to_press_ready_pdf(pdf, new_pdf)
-        print(i, " *" * i)
+config = Configuration.type
 
 def _merge_notes_for_without_csv(pdf, notes):
     if notes['type'] == "FLAT":
@@ -209,17 +190,6 @@ def merge_csv_from(pdf_list):
     print("Pdf - moved!", "time (s): ", round(move_pdf_toc - move_pdf_tic, 4))
 
     return processed_files_with_name_change + processed_files_without_name_change
-
-
-def move_merged_csv():
-    today = datetime.date.today().isoformat()
-    remote_dir_name = os.path.join(config.MERGED_CSV_REMOTE, today)
-    if not os.path.isdir(remote_dir_name):
-        os.mkdir(remote_dir_name)
-    local_csv_list = os.listdir(os.path.join(config.MERGED_CSV_LOCAL, today))
-    for csv_name in local_csv_list:
-        shutil.copy(os.path.join(config.MERGED_CSV_LOCAL, today, csv_name),
-                    os.path.join(config.MERGED_CSV_REMOTE, today, csv_name))
 
 
 if __name__ == "__main__":
