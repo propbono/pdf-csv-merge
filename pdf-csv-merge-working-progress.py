@@ -34,7 +34,7 @@ CSV_HEADERS_BOUND_SELF = ["comment", "Name", "Quantity", "Width", "Height",
                           "IGNORED0", "TextPageCount", "LargestTextComponent",
                           "BindingMachine", "IGNORED1", "IGNORED2", "IGNORED3",
                           "ProductID", "Description", "Notes", "DueDate",
-                          "CompanyName", "FirstName", "LastName",
+                          "CompanyName", "First -> objectName", "LastName",
                           "ContentFile", "IGNORED4", "INGORED5",
                           "PageColorName", "IGNORED6", "BleedsTop",
                           "BleedsLeft", "BleedsBottom", "BleedsRight",
@@ -66,6 +66,13 @@ def _move_pdf_to_press_ready_pdf(name, new_name):
 def _copy_pdf_to_done_folder(pdf):
     shutil.copyfile(os.path.join(config.PREPPED_PDF_PATH, pdf), os.path.join(
             config.PREPPED_PDF_DONE_PATH, pdf))
+
+def rename_and_move_pdf(pdf_list):
+    for i, pdf in enumerate(pdf_list, 1):
+        new_pdf = Notes.delete_prepp_notes_from(pdf)
+        _copy_pdf_to_done_folder(pdf)
+        _move_pdf_to_press_ready_pdf(pdf, new_pdf)
+        print(i, " *" * i)
 
 def _merge_notes_for_without_csv(pdf, notes):
     if notes['type'] == "FLAT":
@@ -122,13 +129,6 @@ def _merge_notes_for_without_csv(pdf, notes):
 
         return row_bound
 
-def rename_and_move_pdf(pdf_list):
-    for i, pdf in enumerate(pdf_list, 1):
-        new_pdf = _delete_prepp_notes_from(pdf)
-        _copy_pdf_to_done_folder(pdf)
-        _move_pdf_to_press_ready_pdf(pdf, new_pdf)
-        print(i, " *" * i)
-
 def _add_data_to_dict(pdf_list):
     processed_files_with_name_change = 0
     processed_files_without_name_change = 0
@@ -138,6 +138,8 @@ def _add_data_to_dict(pdf_list):
         except None:
             processed_files_without_name_change += 1
         else:
+            # this method should be extracted to each product class and factory
+            # method should decide which product is created
             data = _merge_notes_for_without_csv(pdf_without_notes, notes)
             key = notes["stock"]
             if notes["type"] == "FLAT":
@@ -149,7 +151,6 @@ def _add_data_to_dict(pdf_list):
         finally:
             return processed_files_with_name_change, \
                    processed_files_without_name_change
-
 
 def _save_csv_dict_data(key, data_dict,headers):
     today = datetime.datetime.today().strftime("%Y-%m-%d")

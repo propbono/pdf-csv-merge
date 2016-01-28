@@ -34,9 +34,17 @@ class Notes:
 
             if self.notes['width'] != '':
                 self.notes = self.__parse_notes(self.notes)
-                pdf = self.__delete_prepp_notes_from(pdf)
+                pdf = self.delete_prepp_notes_from(pdf)
         finally:
             return pdf, self.notes
+
+    def delete_prepp_notes_from(self, pdf):
+        try:
+            text_to_replace = self.__find_prepp_notes(pdf)
+        except None:
+            return pdf
+        else:
+            return pdf.replace(text_to_replace[0], '')
 
     def __find_prepp_notes(self, pdf):
         text_to_replace = ""
@@ -46,14 +54,6 @@ class Notes:
             text_to_replace = None
         finally:
             return text_to_replace
-
-    def __delete_prepp_notes_from(self, pdf):
-        try:
-            text_to_replace = self.__find_prepp_notes(pdf)
-        except None:
-            return pdf
-        else:
-            return pdf.replace(text_to_replace[0], '')
 
     def __parse_notes(self, notes):
         self.__check_and_correct_stock(notes)
