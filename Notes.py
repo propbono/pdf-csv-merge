@@ -1,7 +1,5 @@
 import re
-
 import _operator
-
 
 class Notes:
 
