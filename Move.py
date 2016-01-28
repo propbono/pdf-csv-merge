@@ -11,16 +11,16 @@ class Move:
     def __init__(self):
         self.config = Configuration.type
 
-    @staticmethod
-    def rename_and_move_pdf(pdf_list):
+
+    def rename_and_move_pdf(self, pdf_list):
         for i, pdf in enumerate(pdf_list, 1):
-            new_pdf = Notes.delete_prepp_notes_from(pdf)
+            notes = Notes()
+            new_pdf = notes.delete_prepp_notes_from(pdf)
             self.__copy_pdf_to_done_folder(pdf)
             self.__move_pdf_to_press_ready_pdf(pdf, new_pdf)
             print(i, " *" * i)
 
-    @staticmethod
-    def move_merged_csv():
+    def move_merged_csv(self):
         today = datetime.date.today().isoformat()
         remote_dir_name = os.path.join(self.config.MERGED_CSV_REMOTE, today)
         if not os.path.isdir(remote_dir_name):
