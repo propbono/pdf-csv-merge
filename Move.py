@@ -23,8 +23,9 @@ class Move:
         remote_dir_name = os.path.join(self.config.MERGED_CSV_REMOTE, today)
         if not os.path.isdir(remote_dir_name):
             os.mkdir(remote_dir_name)
+
         local_csv_list = os.listdir(
-            os.path.join(self.config.MERGED_CSV_LOCAL, today))
+                os.path.join(self.config.MERGED_CSV_LOCAL, today))
         for csv_name in local_csv_list:
             shutil.copy(
                 os.path.join(self.config.MERGED_CSV_LOCAL, today, csv_name),
