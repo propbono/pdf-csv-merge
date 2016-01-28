@@ -2,14 +2,14 @@ import datetime
 import os
 import shutil
 
-import Configuration
+from Configuration import Configuration
 
 from Notes import Notes
 
 
 class Move:
     def __init__(self):
-        self.config = Configuration.Debug
+        self.config = Configuration.type
 
     def rename_and_move_pdf(self, pdf_list):
         for i, pdf in enumerate(pdf_list, 1):
