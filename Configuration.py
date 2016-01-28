@@ -1,6 +1,11 @@
 import os
 import sys
 
+class Configuration:
+
+    def __init__(self):
+        self.type = Debug
+
 class Debug:
     # First check what pdf files we have in the folder
     DIR = os.path.dirname(sys.argv[0])
