@@ -2,20 +2,12 @@
 
 # __author__ = 'propbono@gmail.com'
 import csv
-import datetime
-import os
 import timeit
 
-from Configuration import Configuration
+import Product
 from Move import *
 from Notes import *
 
-
-CSV_HEADERS = ['NAME', 'KINDS', 'QUANTITY', 'WIDTH', 'HEIGHT', 'SIDE 1 COLORS',
-               'SIDE 2 COLORS', 'CONTENT', 'PRODUCT GROUP', 'COMPANY',
-               'FIRST NAME', 'FAMILY NAME', 'DESCRIPTION', 'NOTES', 'DUE DATE',
-               'GRAIN', 'TOP OFFCUT', 'LEFT OFFCUT', 'BOTTOM OFFCUT',
-               'RIGHT OFFCUT', 'PRIORITY']
 
 CSV_HEADERS_FLAT = ["comment", "Name", "Quantity", "Width", "Height",
                     "StockVendor", "StockName", "StockWeight", "IGNORED1",
@@ -39,16 +31,7 @@ CSV_HEADERS_BOUND_SELF = ["comment", "Name", "Quantity", "Width", "Height",
                           "FolioPattern", "TextFolds", "IGNORED7",
                           "BindingNumberUp", "1stUpOrientation",
                           "NUpOrientation", "Grain"]
-# for future consideration
-"""CSV_HEADERS_FOLDED = ["comment", "Name", "Quantity", "Width", "Height",
-                      "StockVendor", "StockName", "StockWeight", "FoldCatalog",
-                      "IGNORED", "Priority", "TopOffcut", "LeftOffcut",
-                      "BottomOffcut", "RightOffcut", "Product MIS ID",
-                      "Description", "Notes", "DueDate", "CompanyName",
-                      "FirstName", "LastName", "ContentFile", "PageColor1",
-                      "PageColor2", "ProductGroup", "Grain", "BleedsTop",
-                      "BleedsLeft", "BleedsBottom", "BleedsRight",
-                      "FolioPattern", "IGNORED", "CombinePages"]"""
+
 
 ROWS_DICT_FLAT = {}
 ROWS_DICT_BOUND = {}
@@ -56,60 +39,6 @@ ROWS_DICT_BOUND = {}
 config = Configuration.type
 clean = Move()
 
-def _merge_notes_for_without_csv(pdf, notes):
-    if notes['type'] == "FLAT":
-
-        row_flat = {"comment": "MetrixCSV2.0_FLAT", "Name": pdf[:-4],
-                    "Quantity": notes["quantity"], "Width": notes["width"],
-                    "Height": notes["height"], "StockVendor": "PG",
-                    "StockName": notes["stockname"],
-                    "StockWeight": notes["stockweight"], "IGNORED1": '',
-                    "IGNORED2": '', "Priority": '5', "TopOffcut": '0',
-                    "LeftOffcut": '0', "BottomOffcut": '0', "RightOffcut": '0',
-                    "ProductID": '', "Description": pdf.split('-')[0],
-                    "Notes": '', "DueDate": '', "CompanyName": pdf.split('-')[2],
-                    "FirstName": '', "LastName": '', "ContentFile": '',
-                    "PageColor1": '', "PageColor2": '',
-                    "ProductGroup": ', "Grain":', "BleedsTop": '0.0625',
-                    "BleedsLeft": '0.0625', "BleedsBottom": '0.0625', "BleedsRight": '0.0625',
-                    "FolioSide1": "Front", "FolioSide2": "Back"}
-        if "notes" in notes:
-            row_flat["Notes"] = notes["notes"]
-        row_flat["ContentFile"] = pdf
-        if "group" in notes:
-            row_flat["ProductGroup"] = notes["group"]
-
-
-        return row_flat
-    else:
-        row_bound = {"comment": "MetrixCSV2.0_BOUND_SELF_COVER", "Name": pdf[:-4],
-               "Quantity": notes["quantity"], "Width": notes["width"], "Height":
-                   notes["height"], "StockVendor": "PG",
-               "StockName": notes["stockname"], "StockWeight": notes["stockweight"],
-                "IGNORED0": "", "TextPageCount": "", "LargestTextComponent": "4",
-               "BindingMachine": "DUPLO", "IGNORED1": "", "IGNORED2": "",
-               "IGNORED3": "", "ProductID": "", "Description": pdf.split('-')[
-                0], "Notes": "",
-               "DueDate": "", "CompanyName": pdf.split('-')[2], "FirstName": "",
-               "LastName": "", "ContentFile": pdf, "IGNORED4": "",
-               "INGORED5": "", "PageColorName": "Cyan, Magenta, Yellow, Black", "IGNORED6": "",
-               "BleedsTop": "0.0625", "BleedsLeft": "0.0625", "BleedsBottom": "0.0625",
-               "BleedsRight": "0.0625", "FolioPattern": "",
-               "TextFolds": "",
-               "IGNORED7": "", "BindingNumberUp": "", "1stUpOrientation": "HeadToJog",
-               "NUpOrientation": "", "Grain": ""}
-
-        if "pages" in notes:
-            row_bound["TextPageCount"] = notes["pages"]
-        row_bound["ProductID"] = ''  # pdf.split('-')[0] #this needs to be unique
-        if "group" in notes:
-            row_bound["Notes"] = notes["group"]
-        if "notes" in notes:
-            row_bound["Notes"] += " " + notes["notes"]
-
-
-
-        return row_bound
 
 def _add_data_to_dict(pdf_list):
     processed_files_with_name_change = 0
@@ -121,14 +50,25 @@ def _add_data_to_dict(pdf_list):
         except None:
             processed_files_without_name_change += 1
         else:
-            # this method should be extracted to each product class and factory
-            # method should decide which product is created
-            data = _merge_notes_for_without_csv(pdf_without_notes, notes)
-            key = notes["stock"]
+
+            product = None
             if notes["type"] == "FLAT":
-                ROWS_DICT_FLAT.setdefault(key, []).append(data)
+                product = Product.Flat(pdf_without_notes, notes)
             else:
-                ROWS_DICT_BOUND.setdefault(key,[]).append(data)
+                product = Product.Bound(pdf_without_notes, notes)
+
+            data = product.merge_notes_without_csv()
+            key = notes["stock"]
+            ROWS_DICT_FLAT.setdefault(key, []).append(data)
+            #
+            # # this method should be extracted to each product class and factory
+            # # method should decide which product is created
+            # data = _merge_notes_for_without_csv(pdf_without_notes, notes)
+            # key = notes["stock"]
+            # if notes["type"] == "FLAT":
+            #     ROWS_DICT_FLAT.setdefault(key, []).append(data)
+            # else:
+            #     ROWS_DICT_BOUND.setdefault(key,[]).append(data)
             print(pdf, " - added!")
             processed_files_with_name_change += 1
         finally:
