@@ -11,7 +11,6 @@ import shutil
 import timeit
 import configuration
 
-
 CSV_HEADERS = ['NAME', 'KINDS', 'QUANTITY', 'WIDTH', 'HEIGHT', 'SIDE 1 COLORS',
                'SIDE 2 COLORS', 'CONTENT', 'PRODUCT GROUP', 'COMPANY',
                'FIRST NAME', 'FAMILY NAME', 'DESCRIPTION', 'NOTES', 'DUE DATE',
@@ -100,64 +99,76 @@ def _check_and_correct_stock(notes):
             notes["stock"] += "5000"
         else:
             notes["stock"] += "1000"
-    if  _operator.contains(notes["stock"], "16pt") or _operator.contains(notes["stock"], "uv") or _operator.contains(notes["stock"], "matte"):
+
+    if notes["stock"] == "d":
+        notes["stock"] = "digital"
+
+    if _operator.contains(notes["stock"], "16pt") or _operator.contains(notes["stock"], "uv") or _operator.contains(
+            notes["stock"], "matte"):
         notes["stockname"] = "16pt-Cover"
         notes["stockweight"] = "338"
 
-    if notes["stock"] == "100lb":
+    if _operator.contains(notes["stock"], "100lb"):
         notes["stockname"] = "100lb-Text"
         notes["stockweight"] = "150"
 
-    if notes["stock"] == "80lb":
+    if _operator.contains(notes["stock"], "80lb"):
         notes["stockname"] = "80lb-Text"
         notes["stockweight"] = "115"
 
-    if notes["stock"] == "70lb":
+    if _operator.contains(notes["stock"], "70lb"):
         notes["stockname"] = "70lb-Text"
         notes["stockweight"] = "95"
 
-    if notes["stock"] == "60lb":
+    if _operator.contains(notes["stock"], "60lb"):
         notes["stockname"] = "60lb-Text"
         notes["stockweight"] = "90"
 
-
-    if notes["stock"] == "18pt":
-        notes["stockname"] = "18pt-Matte"
-        notes["stockweight"] = "350"
-
-    if notes["stock"] == "10pt":
-        notes["stockname"] = "10pt-Cover"
-        notes["stockweight"] = "260"
-
-    if notes["stock"] == "12pt":
-        notes["stockname"] = "12pt-Cover"
-        notes["stockweight"] = "278"
-
-    if notes["stock"] == "14pt":
-        notes["stockname"] = "14pt-Cover"
-        notes["stockweight"] = "308"
-
-    if notes["stock"] == "8pt":
+    if _operator.contains(notes["stock"], "8pt"):
         notes["stockname"] = "8pt-Cover"
         notes["stockweight"] = "260"
 
-    if notes["stock"] == "70lboffset":
+    if _operator.contains(notes["stock"], "18pt"):
+        notes["stockname"] = "18pt-Matte"
+        notes["stockweight"] = "350"
+
+    if _operator.contains(notes["stock"], "10pt"):
+        notes["stockname"] = "10pt-Cover"
+        notes["stockweight"] = "260"
+
+    if _operator.contains(notes["stock"], "12pt"):
+        notes["stockname"] = "12pt-Cover"
+        notes["stockweight"] = "278"
+
+    if _operator.contains(notes["stock"], "14pt"):
+        notes["stockname"] = "14pt-Cover"
+        notes["stockweight"] = "308"
+
+    if _operator.contains(notes["stock"], "24pt"):
+        notes["stockname"] = "24pt-Cover"
+        notes["stockweight"] = "308"
+
+    if _operator.contains(notes["stock"], "15pt"):
+        notes["stockname"] = "15pt-C1S"
+        notes["stockweight"] = "308"
+
+    if _operator.contains(notes["stock"], "70lboffset"):
         notes["stockname"] = "70lb-Offset"
         notes["stockweight"] = "95"
 
-    if notes["stock"] == "60lboffset":
+    if _operator.contains(notes["stock"], "60lboffset"):
         notes["stockname"] = "60lb-Offset"
         notes["stockweight"] = "90"
 
-    if notes["stock"] == "50lboffset":
+    if _operator.contains(notes["stock"], "50lboffset"):
         notes["stockname"] = "50lb-Offset"
         notes["stockweight"] = "74"
 
-    if notes["stock"] == "qm":
+    if _operator.contains(notes["stock"], "qm"):
         notes["stockname"] = "QM"
         notes["stockweight"] = "20"
 
-    if notes["stock"] == "digital":
+    if _operator.contains(notes["stock"], "digital"):
         notes["stockname"] = "Digital"
         notes["stockweight"] = "150"
 
@@ -166,10 +177,9 @@ def _check_and_correct_stock(notes):
         notes["notes"] += " BOOKLET"
 
 
-
-
 def _add_group_to_notes(notes):
     notes["notes"] = notes["group"] + " " + notes["notes"]
+
 
 def _check_and_crorrect_group(notes):
     if notes["group"] == "D":
@@ -189,20 +199,24 @@ def _check_and_crorrect_group(notes):
     if notes["group"] == "N":
         notes["group"] = "NOAQ"
 
+
 def _check_and_crorrect_type(notes):
     if notes["pages"] != "":
         notes["type"] = "BOUND"
     else:
         notes["type"] = "FLAT"
 
+
+# noinspection PyTypeChecker,PyTypeChecker
 def extract_notes_from(pdf):
-    "LixarAsafKarpel(3.5x2-18pt-g;u-n;somerhing-p;36)-500.pdf"
-    notes = {'width': '', 'height': '', "stock": '', 'stockname':'',
-             "stockweight":'', 'quantity': '',
-             'notes': '', 'group': '', 'type':'', 'pages':''}
+    """LixarAsafKarpel(3.5x2-18pt-g;u-n;somerhing-p;36)-500.pd"""
+    notes = {'width': '', 'height': '', "stock": '', 'stockname': '',
+             "stockweight": '', 'quantity': '',
+             'notes': '', 'group': '', 'type': '', 'pages': ''}
     notes_from_pdf = _find_prepp_notes(pdf)
     if notes_from_pdf:
         notes_from_pdf = notes_from_pdf[0].lstrip('(').rstrip(')').split('-')
+        # noinspection PyTypeChecker,PyTypeChecker,PyTypeChecker,PyTypeChecker,PyTypeChecker,PyTypeChecker,PyTypeChecker,PyTypeChecker,PyTypeChecker,PyTypeChecker,PyTypeChecker
         notes["width"] = notes_from_pdf[0].split('x')[0]
         notes["height"] = notes_from_pdf[0].split('x')[1]
         notes["stock"] = notes_from_pdf[1].lower()
@@ -226,7 +240,7 @@ def extract_notes_from(pdf):
 
 def _copy_pdf_to_done_folder(pdf):
     shutil.copyfile(os.path.join(config.PREPPED_PDF_PATH, pdf), os.path.join(
-            config.PREPPED_PDF_DONE_PATH, pdf))
+        config.PREPPED_PDF_DONE_PATH, pdf))
 
 
 def _merge_notes_for_without_csv(pdf, notes):
@@ -252,25 +266,24 @@ def _merge_notes_for_without_csv(pdf, notes):
         if "group" in notes:
             row_flat["ProductGroup"] = notes["group"]
 
-
         return row_flat
     else:
         row_bound = {"comment": "MetrixCSV2.0_BOUND_SELF_COVER", "Name": pdf[:-4],
-               "Quantity": notes["quantity"], "Width": notes["width"], "Height":
-                   notes["height"], "StockVendor": "PG",
-               "StockName": notes["stockname"], "StockWeight": notes["stockweight"],
-                "IGNORED0": "", "TextPageCount": "", "LargestTextComponent": "4",
-               "BindingMachine": "DUPLO", "IGNORED1": "", "IGNORED2": "",
-               "IGNORED3": "", "ProductID": "", "Description": pdf.split('-')[
+                     "Quantity": notes["quantity"], "Width": notes["width"], "Height":
+                         notes["height"], "StockVendor": "PG",
+                     "StockName": notes["stockname"], "StockWeight": notes["stockweight"],
+                     "IGNORED0": "", "TextPageCount": "", "LargestTextComponent": "4",
+                     "BindingMachine": "DUPLO", "IGNORED1": "", "IGNORED2": "",
+                     "IGNORED3": "", "ProductID": "", "Description": pdf.split('-')[
                 0], "Notes": "",
-               "DueDate": "", "CompanyName": pdf.split('-')[2], "FirstName": "",
-               "LastName": "", "ContentFile": pdf, "IGNORED4": "",
-               "INGORED5": "", "PageColorName": "Cyan, Magenta, Yellow, Black", "IGNORED6": "",
-               "BleedsTop": "0.0625", "BleedsLeft": "0.0625", "BleedsBottom": "0.0625",
-               "BleedsRight": "0.0625", "FolioPattern": "",
-               "TextFolds": "",
-               "IGNORED7": "", "BindingNumberUp": "", "1stUpOrientation": "HeadToJog",
-               "NUpOrientation": "", "Grain": ""}
+                     "DueDate": "", "CompanyName": pdf.split('-')[2], "FirstName": "",
+                     "LastName": "", "ContentFile": pdf, "IGNORED4": "",
+                     "INGORED5": "", "PageColorName": "Cyan, Magenta, Yellow, Black", "IGNORED6": "",
+                     "BleedsTop": "0.0625", "BleedsLeft": "0.0625", "BleedsBottom": "0.0625",
+                     "BleedsRight": "0.0625", "FolioPattern": "",
+                     "TextFolds": "",
+                     "IGNORED7": "", "BindingNumberUp": "", "1stUpOrientation": "HeadToJog",
+                     "NUpOrientation": "", "Grain": ""}
 
         if "pages" in notes:
             row_bound["TextPageCount"] = notes["pages"]
@@ -279,8 +292,6 @@ def _merge_notes_for_without_csv(pdf, notes):
             row_bound["Notes"] = notes["group"]
         if "notes" in notes:
             row_bound["Notes"] += " " + notes["notes"]
-
-
 
         return row_bound
 
@@ -304,7 +315,7 @@ def _add_data_to_dict(pdf_list):
             if notes["type"] == "FLAT":
                 ROWS_DICT_FLAT.setdefault(key, []).append(data)
             else:
-                ROWS_DICT_BOUND.setdefault(key,[]).append(data)
+                ROWS_DICT_BOUND.setdefault(key, []).append(data)
             print(pdf, " - added!")
             processed_files_with_name_change += 1
         else:
@@ -312,7 +323,7 @@ def _add_data_to_dict(pdf_list):
     return processed_files_with_name_change, processed_files_without_name_change
 
 
-def _save_csv_dict_data(key, data_dict,headers):
+def _save_csv_dict_data(key, data_dict, headers):
     today = datetime.datetime.today().strftime("%Y-%m-%d")
     now = datetime.datetime.now().strftime("%Y-%m-%dT%H%M")  # date:
     # 2015-11-03T1935
@@ -323,8 +334,8 @@ def _save_csv_dict_data(key, data_dict,headers):
     if not os.path.isdir(dir_name):
         os.mkdir(dir_name)
     if not os.path.exists(csv_file_name):
-        with open(csv_file_name, 'a', newline = '') as csv_file:
-            writer = csv.DictWriter(csv_file, fieldnames = headers)
+        with open(csv_file_name, 'a', newline='') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=headers)
             writer.writeheader()
             writer.writerows(data_dict)
 
@@ -345,9 +356,9 @@ def merge_csv_from(pdf_list):
     csv_tic = timeit.default_timer()
 
     for key in ROWS_DICT_FLAT.keys():
-        _save_csv_dict_data(key, ROWS_DICT_FLAT[key],CSV_HEADERS_FLAT)
+        _save_csv_dict_data(key, ROWS_DICT_FLAT[key], CSV_HEADERS_FLAT)
     for key in ROWS_DICT_BOUND.keys():
-        _save_csv_dict_data(key, ROWS_DICT_BOUND[key],CSV_HEADERS_BOUND_SELF)
+        _save_csv_dict_data(key, ROWS_DICT_BOUND[key], CSV_HEADERS_BOUND_SELF)
 
     csv_toc = timeit.default_timer()
     print("CSV - created!", "time (s): ", round(csv_toc - csv_tic, 4))
