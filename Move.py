@@ -9,7 +9,7 @@ from Notes import Notes
 
 class Move:
     def __init__(self):
-        self.config = Configuration.type
+        self.config = Configuration.factory()
 
 
     def rename_and_move_pdf(self, pdf_list):

@@ -1,4 +1,12 @@
-class Flat:
+class Product(object):
+    @staticmethod
+    def factory(pdf, notes):
+        type = notes["type"]
+        if type == "FLAT": return Flat(pdf, notes)
+        if type == "BOUND": return Bound(pdf, notes)
+        assert 0, "Bad Product type: " + type
+
+class Flat(Product):
     CSV_HEADERS_FLAT = ["comment", "Name", "Quantity", "Width", "Height",
                         "StockVendor", "StockName", "StockWeight", "IGNORED1",
                         "IGNORED2", "Priority", "TopOffcut", "LeftOffcut",
@@ -40,7 +48,7 @@ class Flat:
             self.row["ProductGroup"] = self.notes["group"]
        return self.row
 
-class Bound:
+class Bound(Product):
     CSV_HEADERS_BOUND_SELF = ["comment", "Name", "Quantity", "Width", "Height",
                               "StockVendor", "StockName", "StockWeight",
                               "IGNORED0", "TextPageCount",

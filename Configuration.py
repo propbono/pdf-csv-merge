@@ -1,11 +1,16 @@
 import os
 import sys
+#
+class Configuration(object):
+    init_type = "Debug"
+    @staticmethod
+    def factory(type=init_type):
+        if type == "Debug": return Debug()
+        if type == "Working": return Working()
+        assert 0, "Bad configuration type: " + type
 
-class Configuration:
-        type = Debug
 
-
-class Debug:
+class Debug(Configuration):
     # First check what pdf files we have in the folder
     DIR = os.path.dirname(sys.argv[0])
 
@@ -16,7 +21,7 @@ class Debug:
     PREPPED_PDF_DONE_PATH = os.path.join(PREPPED_PDF_PATH, "00Done")
     MERGED_CSV_LOCAL = os.path.join(DIR, "merged_csv")
 
-class Working:
+class Working(Configuration):
     # First check what pdf files we have in the folder
     DIR = os.path.dirname(sys.argv[0])
 

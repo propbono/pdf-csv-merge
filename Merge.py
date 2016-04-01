@@ -4,9 +4,12 @@
 import csv
 import timeit
 
+import DictionaryData
 import Product
 from Move import *
 from Notes import *
+from Configuration import Configuration
+from DictionaryData import *
 
 
 CSV_HEADERS_FLAT = ["comment", "Name", "Quantity", "Width", "Height",
@@ -24,7 +27,7 @@ CSV_HEADERS_BOUND_SELF = ["comment", "Name", "Quantity", "Width", "Height",
                           "IGNORED0", "TextPageCount", "LargestTextComponent",
                           "BindingMachine", "IGNORED1", "IGNORED2", "IGNORED3",
                           "ProductID", "Description", "Notes", "DueDate",
-                          "CompanyName", "First -> objectName", "LastName",
+                          "CompanyName", "FirstName", "LastName",
                           "ContentFile", "IGNORED4", "INGORED5",
                           "PageColorName", "IGNORED6", "BleedsTop",
                           "BleedsLeft", "BleedsBottom", "BleedsRight",
@@ -36,44 +39,40 @@ CSV_HEADERS_BOUND_SELF = ["comment", "Name", "Quantity", "Width", "Height",
 ROWS_DICT_FLAT = {}
 ROWS_DICT_BOUND = {}
 
-config = Configuration.type
+config = Configuration.factory()
 clean = Move()
 
 
 def _add_data_to_dict(pdf_list):
+    rows_dict_flat = {}
+    rows_dict_bound = {}
     processed_files_with_name_change = 0
     processed_files_without_name_change = 0
     for pdf in pdf_list:
         notes = Notes()
         try:
             pdf_without_notes, notes = notes.extract_notes_from(pdf)
-        except None:
-            processed_files_without_name_change += 1
+        except:
+            pdf_without_notes = pdf
         else:
-
-            product = None
-            if notes["type"] == "FLAT":
-                product = Product.Flat(pdf_without_notes, notes)
+            if notes == None:
+                processed_files_without_name_change += 1
             else:
-                product = Product.Bound(pdf_without_notes, notes)
+                product = Product.Product.factory(pdf_without_notes, notes)
+                data = product.merge_notes_without_csv()
 
-            data = product.merge_notes_without_csv()
-            key = notes["stock"]
-            ROWS_DICT_FLAT.setdefault(key, []).append(data)
-            #
-            # # this method should be extracted to each product class and factory
-            # # method should decide which product is created
-            # data = _merge_notes_for_without_csv(pdf_without_notes, notes)
-            # key = notes["stock"]
-            # if notes["type"] == "FLAT":
-            #     ROWS_DICT_FLAT.setdefault(key, []).append(data)
-            # else:
-            #     ROWS_DICT_BOUND.setdefault(key,[]).append(data)
-            print(pdf, " - added!")
-            processed_files_with_name_change += 1
-        finally:
-            return processed_files_with_name_change, \
-                   processed_files_without_name_change
+                key = notes["stock"]
+                if notes["type"] == "FLAT":
+                    rows_dict_flat.setdefault(key,[]).append(data)
+                elif notes["type"] == "BOUND":
+                    rows_dict_bound.setdefault(key, []).append(data)
+
+                print(pdf, " - added!")
+                processed_files_with_name_change += 1
+
+    return processed_files_with_name_change, \
+           processed_files_without_name_change, \
+           rows_dict_flat, rows_dict_bound
 
 def _save_csv_dict_data(key, data_dict,headers):
     today = datetime.datetime.today().strftime("%Y-%m-%d")
@@ -96,8 +95,10 @@ def merge_csv_from(pdf_list):
     print("Collecting data to dictionary:")
     dict_tic = timeit.default_timer()
 
+    #data = DictionaryData.Data(_add_data_to_dict(pdf_list))
     processed_files_with_name_change, \
-    processed_files_without_name_change = _add_data_to_dict(pdf_list)
+    processed_files_without_name_change, flat, bound = _add_data_to_dict(
+            pdf_list)
 
     dict_toc = timeit.default_timer()
     print("All data in dictionary!", "time (s): ",
