@@ -18,11 +18,12 @@ class Move:
             new_pdf = notes.delete_prepp_notes_from(pdf)
             if new_pdf in self.__press_ready_pdf_list():
                 self.__move_pdf_to_done_folder(pdf)
-                print(i, "Already in press ready folder - NOT MOVED")
+                print(i, new_pdf[:6], "Already in press ready folder - NOT " \
+                                    "MOVED")
             else:
                 self.__copy_pdf_to_done_folder(pdf)
                 self.__move_pdf_to_press_ready_pdf(pdf, new_pdf)
-                print(i, " *" * i)
+                print(i, new_pdf[:7], " *" * i)
 
     def __press_ready_pdf_list(self):
         press_ready_pdf_list = [p for p in sorted(
