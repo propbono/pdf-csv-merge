@@ -61,8 +61,6 @@ class Notes:
             else:
                 return text_to_replace
 
-
-
     def __parse_notes(self, notes):
         self.__check_and_correct_stock(notes)
         self.__check_and_crorrect_group(notes)
@@ -71,8 +69,10 @@ class Notes:
 
         if notes["stock"] == "uv" or notes["stock"] == "u":
             notes["group"] = "UV"
+            self.__add_group_to_notes(notes)
         if notes["stock"] == "matte" or notes["stock"] == "m":
             notes["group"] = "MATTE"
+            self.__add_group_to_notes(notes)
 
         return notes
 
@@ -83,7 +83,8 @@ class Notes:
             else:
                 notes["stock"] += "1000"
 
-        if _operator.contains(notes["stock"], "16pt"):
+        if _operator.contains(notes["stock"], "16pt") or notes["stock"] == \
+                "uv" or notes["stock"] == "matte":
             notes["stockname"] = "16pt-Cover"
             notes["stockweight"] = "338"
 
@@ -107,6 +108,10 @@ class Notes:
             notes["stockname"] = "18pt-Matte"
             notes["stockweight"] = "350"
 
+        if notes["stock"] == "8pt":
+            notes["stockname"] = "8pt-Cover"
+            notes["stockweight"] = "260"
+
         if notes["stock"] == "10pt":
             notes["stockname"] = "10pt-Cover"
             notes["stockweight"] = "260"
@@ -119,9 +124,13 @@ class Notes:
             notes["stockname"] = "14pt-Cover"
             notes["stockweight"] = "308"
 
-        if notes["stock"] == "8pt":
-            notes["stockname"] = "8pt-Cover"
-            notes["stockweight"] = "260"
+        if notes["stock"] == "24pt":
+            notes["stockname"] = "24pt-Cover"
+            notes["stockweight"] = "350"
+
+        if notes["stock"] == "15pt":
+            notes["stockname"] = "15pt-C1S"
+            notes["stockweight"] = "308"
 
         if notes["stock"] == "70lboffset":
             notes["stockname"] = "70lb-Offset"
@@ -135,8 +144,17 @@ class Notes:
             notes["stockname"] = "50lb-Offset"
             notes["stockweight"] = "74"
 
+        if notes["stock"] =="qm":
+            notes["stockname"] = "QM"
+            notes["stockweight"] = "20"
+
+        if notes["stock"] == "digital":
+            notes["stockname"] = "Digital"
+            notes["stockweight"] = "150"
+
         if notes["pages"] != "":
             notes["stock"] += "magazine"
+            notes["notes"] += " BOOKLET"
 
     def __add_group_to_notes(self, notes):
         notes["notes"] = notes["group"] + " " + notes["notes"]
