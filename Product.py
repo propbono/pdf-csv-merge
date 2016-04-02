@@ -56,7 +56,7 @@ class Bound(Product):
                               "BindingMachine", "IGNORED1", "IGNORED2",
                               "IGNORED3",
                               "ProductID", "Description", "Notes", "DueDate",
-                              "CompanyName", "First -> objectName", "LastName",
+                              "CompanyName", "FirstName", "LastName",
                               "ContentFile", "IGNORED4", "INGORED5",
                               "PageColorName", "IGNORED6", "BleedsTop",
                               "BleedsLeft", "BleedsBottom", "BleedsRight",
