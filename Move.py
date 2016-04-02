@@ -16,9 +16,20 @@ class Move:
         for i, pdf in enumerate(pdf_list, 1):
             notes = Notes()
             new_pdf = notes.delete_prepp_notes_from(pdf)
-            self.__copy_pdf_to_done_folder(pdf)
-            self.__move_pdf_to_press_ready_pdf(pdf, new_pdf)
-            print(i, " *" * i)
+            if new_pdf in self.__press_ready_pdf_list():
+                self.__move_pdf_to_done_folder(pdf)
+                print(i, "Already in press ready folder - NOT MOVED")
+            else:
+                self.__copy_pdf_to_done_folder(pdf)
+                self.__move_pdf_to_press_ready_pdf(pdf, new_pdf)
+                print(i, " *" * i)
+
+    def __press_ready_pdf_list(self):
+        press_ready_pdf_list = [p for p in sorted(
+            os.listdir(self.config.PRESS_READY_PDF_PATH)) if
+                                p.upper().startswith(
+                                    "U") and p.lower().endswith('.pdf')]
+        return press_ready_pdf_list
 
     def move_merged_csv(self):
         today = datetime.date.today().isoformat()
@@ -39,6 +50,12 @@ class Move:
 
     def __copy_pdf_to_done_folder(self, pdf):
         shutil.copyfile(os.path.join(
+                self.config.PREPPED_PDF_PATH, pdf),
+                os.path.join(
+                        self.config.PREPPED_PDF_DONE_PATH, pdf))
+
+    def __move_pdf_to_done_folder(self, pdf,):
+        shutil.move(os.path.join(
                 self.config.PREPPED_PDF_PATH, pdf),
                 os.path.join(
                         self.config.PREPPED_PDF_DONE_PATH, pdf))
