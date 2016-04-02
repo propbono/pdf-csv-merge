@@ -1,15 +1,11 @@
 #!/usr/bin/python
 
 # __author__ = 'propbono@gmail.com'
-import csv
 import timeit
+import csv
 
-import DictionaryData
-import Product
-from Move import *
-from Notes import *
-from Configuration import Configuration
 from DictionaryData import *
+from Move import *
 
 
 CSV_HEADERS_FLAT = ["comment", "Name", "Quantity", "Width", "Height",
@@ -35,46 +31,13 @@ CSV_HEADERS_BOUND_SELF = ["comment", "Name", "Quantity", "Width", "Height",
                           "BindingNumberUp", "1stUpOrientation",
                           "NUpOrientation", "Grain"]
 
-
-ROWS_DICT_FLAT = {}
-ROWS_DICT_BOUND = {}
-
+# in production add parameter "Working"
 config = Configuration.factory()
 clean = Move()
+dict_data = Data()
 
 
-def _add_data_to_dict(pdf_list):
-    rows_dict_flat = {}
-    rows_dict_bound = {}
-    processed_files_with_name_change = 0
-    processed_files_without_name_change = 0
-    for pdf in pdf_list:
-        notes = Notes()
-        try:
-            pdf_without_notes, notes = notes.extract_notes_from(pdf)
-        except:
-            pdf_without_notes = pdf
-        else:
-            if notes == None:
-                processed_files_without_name_change += 1
-            else:
-                product = Product.Product.factory(pdf_without_notes, notes)
-                data = product.merge_notes_without_csv()
-
-                key = notes["stock"]
-                if notes["type"] == "FLAT":
-                    rows_dict_flat.setdefault(key,[]).append(data)
-                elif notes["type"] == "BOUND":
-                    rows_dict_bound.setdefault(key, []).append(data)
-
-                print(pdf, " - added!")
-                processed_files_with_name_change += 1
-
-    return processed_files_with_name_change, \
-           processed_files_without_name_change, \
-           rows_dict_flat, rows_dict_bound
-
-def _save_csv_dict_data(key, data_dict,headers):
+def __save_csv_dict_data(key, data_dict, headers):
     today = datetime.datetime.today().strftime("%Y-%m-%d")
     now = datetime.datetime.now().strftime("%Y-%m-%dT%H%M")  # date:
     # 2015-11-03T1935
@@ -90,15 +53,12 @@ def _save_csv_dict_data(key, data_dict,headers):
             writer.writeheader()
             writer.writerows(data_dict)
 
-
 def merge_csv_from(pdf_list):
     print("Collecting data to dictionary:")
     dict_tic = timeit.default_timer()
 
-    #data = DictionaryData.Data(_add_data_to_dict(pdf_list))
-    processed_files_with_name_change, \
-    processed_files_without_name_change, flat, bound = _add_data_to_dict(
-            pdf_list)
+    data = DictionaryData(pdf_list)
+    dict_data = data.add_data_to_dict()
 
     dict_toc = timeit.default_timer()
     print("All data in dictionary!", "time (s): ",
@@ -108,10 +68,10 @@ def merge_csv_from(pdf_list):
     print("Creating CSV's:")
     csv_tic = timeit.default_timer()
 
-    for key in ROWS_DICT_FLAT.keys():
-        _save_csv_dict_data(key, ROWS_DICT_FLAT[key],CSV_HEADERS_FLAT)
-    for key in ROWS_DICT_BOUND.keys():
-        _save_csv_dict_data(key, ROWS_DICT_BOUND[key],CSV_HEADERS_BOUND_SELF)
+    for key in dict_data.rows_flat.keys():
+        __save_csv_dict_data(key, dict_data.rows_flat[key], CSV_HEADERS_FLAT)
+    for key in dict_data.rows_bound.keys():
+        __save_csv_dict_data(key, dict_data.rows_bound[key], CSV_HEADERS_BOUND_SELF)
 
     csv_toc = timeit.default_timer()
     print("CSV - created!", "time (s): ", round(csv_toc - csv_tic, 4))
@@ -133,7 +93,7 @@ def merge_csv_from(pdf_list):
     move_pdf_toc = timeit.default_timer()
     print("Pdf - moved!", "time (s): ", round(move_pdf_toc - move_pdf_tic, 4))
 
-    return processed_files_with_name_change + processed_files_without_name_change
+    return dict_data.processed_files + dict_data.skipped_files
 
 
 if __name__ == "__main__":
@@ -152,8 +112,3 @@ if __name__ == "__main__":
 
     os.system("pause")
 
-
-
-# after creating all csv and copy them to NAS create project from merged csv
-# move merged csv to done folder
-# add names of csv to description of the
