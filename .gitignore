@@ -15,4 +15,6 @@ csv_missing_db.csv
 00Prepped
 00PressReady
 00Signs
+prepped_pdf
+press_ready_pdf
 __pycache__

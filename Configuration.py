@@ -14,8 +14,8 @@ class Debug(Configuration):
     # First check what pdf files we have in the folder
     DIR = os.path.dirname(sys.argv[0])
 
-    PREPPED_PDF_PATH = os.path.join(DIR, "pdf")
-    PRESS_READY_PDF_PATH = os.path.join(DIR, "pdf")
+    PREPPED_PDF_PATH = os.path.join(DIR, "prepped_pdf")
+    PRESS_READY_PDF_PATH = os.path.join(DIR, "press_ready_pdf")
     SOURCE_CSV_PATH = "O:\\"
     MERGED_CSV_REMOTE = os.path.join(DIR, "merged_csv_remote")
     PREPPED_PDF_DONE_PATH = os.path.join(PREPPED_PDF_PATH, "00Done")
