@@ -5,8 +5,8 @@ from Notes import Notes
 class Data:
     def __init__(self, processed = 0, skipped = 0, flat = {},
                  bound = {}):
-        self.processed_files = processed
-        self.skipped_files = skipped
+        self.files_added_to_csv = processed
+        self.files_skipped = skipped
         self.rows_flat = flat
         self.rows_bound = bound
 
@@ -25,7 +25,8 @@ class DictionaryData:
                 continue #check impact
             else:
                 if notes == None:
-                    data.skipped_files += 1
+                    data.files_skipped += 1
+                    print("NOT PREPPED: ", pdf_without_notes)
                 else:
                     product = Product.Product.factory(pdf_without_notes, notes)
                     row = product.merge_notes_without_csv()
@@ -36,7 +37,7 @@ class DictionaryData:
                     elif notes["type"] == "BOUND":
                         data.rows_bound.setdefault(key, []).append(row)
 
-                    print(pdf, " - added!")
-                    data.processed_files += 1
+                    print("ADDED!!: ", pdf)
+                    data.files_added_to_csv += 1
         return data
 

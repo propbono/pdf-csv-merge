@@ -93,7 +93,7 @@ def merge_csv_from(pdf_list):
     move_pdf_toc = timeit.default_timer()
     print("Pdf - moved!", "time (s): ", round(move_pdf_toc - move_pdf_tic, 4))
 
-    return dict_data.processed_files + dict_data.skipped_files
+    return dict_data.processed_files, dict_data.skipped_files
 
 
 if __name__ == "__main__":
@@ -106,9 +106,9 @@ if __name__ == "__main__":
           round(pdf_list_toc - pdf_list_tic, 4))
     files_to_process = len(pdf_list)
     print("Number of files to process", files_to_process)
-    processed_files = merge_csv_from(pdf_list)
-    print("Number of files to process", files_to_process)
-    print("Files processed: ", processed_files)
+    files_added_to_csv, files_skipped = merge_csv_from(pdf_list)
+    print("Files added to csv: ", files_added_to_csv)
+    print("Files skipped: ", files_skipped)
 
     os.system("pause")
 
