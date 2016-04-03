@@ -117,5 +117,5 @@ class Data:
         for key in dict_data.rows_bound.keys():
             self.__save_csv_dict_data(key, dict_data.rows_bound[key],
                                  self.CSV_HEADERS_BOUND_SELF)
-
+        return dict_data
 
