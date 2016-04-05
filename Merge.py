@@ -52,7 +52,8 @@ if __name__ == "__main__":
     print("Number of files to process", files_to_process)
     files_added_to_csv, files_skipped = merge.merge_csv_from()
     print("Files added to csv: ", files_added_to_csv)
-    print("Warning! Files was skipped: ", files_skipped)
+    if files_skipped > 0:
+        print("Warning! There are unprepared files: ", files_skipped)
 
     os.system("pause")
 
