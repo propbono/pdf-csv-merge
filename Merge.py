@@ -2,9 +2,10 @@
 
 # __author__ = 'propbono@gmail.com'
 import timeit
-
+import os
 from Data import Data
 from Move import Move
+from Configuration import Configuration
 
 class Merge(object):
     def __init__(self):
