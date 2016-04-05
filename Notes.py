@@ -148,7 +148,7 @@ class Notes:
             notes["stockname"] = "QM"
             notes["stockweight"] = "20"
 
-        if notes["stock"] == "digital":
+        if notes["stock"] == "digital" or notes["stock"] == "d":
             notes["stockname"] = "Digital"
             notes["stockweight"] = "150"
 
