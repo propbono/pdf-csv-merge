@@ -39,7 +39,7 @@ class Merge():
             tic = timeit.default_timer()
             cleaner.delete_unused_pdf(pdf_to_remove)
             toc = timeit.default_timer()
-            print("Pdf's removed", round(toc - tic, 4))
+            print("Reprint Pdf's removed", round(toc - tic, 4))
         return dict_data.files_added_to_csv, dict_data.files_skipped
 
     def __generate_pdf_list(self):
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     print("Pdf list - created!", "time (s): ", round(toc - tic, 4))
     print()
     files_to_process = len(merge.pdf_list)
-    print("Number of files to process", files_to_process)
+    print("Number of files to process: ", files_to_process)
     files_added_to_csv, files_skipped = merge.merge_csv_from()
     print("Files added to csv: ", files_added_to_csv)
     if files_skipped > 0:
