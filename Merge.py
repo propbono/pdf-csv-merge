@@ -26,10 +26,13 @@ class Merge():
         print("CSV - copied!")
         print()
         print("Moving pdf's:")
-        cleaner.rename_and_move_pdf(self.pdf_list)
+        pdf_to_remove = cleaner.rename_and_move_pdf(self.pdf_list)
         print("Pdf - moved!")
         print()
-
+        if pdf_to_remove is not None:
+            print("There are some reprints - removing pdf")
+            cleaner.delete_unused_pdf(pdf_to_remove)
+            print("Pdf's removed")
         return dict_data.files_added_to_csv, dict_data.files_skipped
 
     def __generate_pdf_list(self):

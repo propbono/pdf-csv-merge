@@ -10,6 +10,7 @@ from Notes import Notes
 class Move:
     def __init__(self):
         self.config = Configuration.factory()
+        self.pdf_to_delete = []
 
 
     def rename_and_move_pdf(self, pdf_list):
@@ -17,13 +18,14 @@ class Move:
             notes = Notes()
             new_pdf = notes.delete_prepp_notes_from(pdf)
             if new_pdf in self.__press_ready_pdf_list():
-                self.__move_pdf_to_done_folder(pdf)
+                self.pdf_to_delete.append(new_pdf)
                 print(i, new_pdf[:6], "Already in press ready folder - NOT " \
                                     "MOVED")
             else:
                 self.__copy_pdf_to_done_folder(pdf)
                 self.__move_pdf_to_press_ready_pdf(pdf, new_pdf)
                 print(i, new_pdf[:7], " *" * i)
+        return self.pdf_to_delete
 
     def __press_ready_pdf_list(self):
         press_ready_pdf_list = [p for p in sorted(
@@ -55,8 +57,6 @@ class Move:
                 os.path.join(
                         self.config.PREPPED_PDF_DONE_PATH, pdf))
 
-    def __move_pdf_to_done_folder(self, pdf,):
-        shutil.move(os.path.join(
-                self.config.PREPPED_PDF_PATH, pdf),
-                os.path.join(
-                        self.config.PREPPED_PDF_DONE_PATH, pdf))
+    def delete_unused_pdf(self, pdf_list):
+        for pdf in pdf_list:
+            os.remove(pdf)
