@@ -7,7 +7,7 @@ from Configuration import Configuration
 from Notes import Notes
 
 
-class Move:
+class Move(object):
     def __init__(self):
         self.config = Configuration.factory()
         self.pdf_to_delete = []

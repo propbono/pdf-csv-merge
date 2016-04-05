@@ -7,18 +7,16 @@ from Configuration import Configuration
 from Notes import Notes
 
 
-class ReturnData:
-    def __init__(self, processed = 0, skipped = 0, flat = {},
-                 bound = {}):
+class ReturnData(object):
+    def __init__(self, processed = 0, skipped = 0, flat = None,
+                 bound = None):
         self.files_added_to_csv = processed
         self.files_skipped = skipped
-        self.rows_flat = flat
-        self.rows_bound = bound
+        self.rows_flat = flat or {}
+        self.rows_bound = bound or {}
 
 
-class Data:
-
-
+class Data(object):
     def __init__(self, pdf_list = None):
         self.pdf_list = pdf_list
         self.config = Configuration.factory()
@@ -72,7 +70,7 @@ class Data:
             except:
                 continue #check impact
             else:
-                if notes == None:
+                if notes is None:
                     data.files_skipped += 1
                     print("NOT PREPPED: ", pdf_without_notes)
                 else:

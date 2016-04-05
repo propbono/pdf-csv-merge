@@ -3,10 +3,10 @@
 # __author__ = 'propbono@gmail.com'
 import timeit
 
-from Data import *
-from Move import *
+from Data import Data
+from Move import Move
 
-class Merge():
+class Merge(object):
     def __init__(self):
         self.config = Configuration.factory()
         self.pdf_list = self.__generate_pdf_list()

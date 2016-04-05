@@ -1,7 +1,7 @@
 import re
 import _operator
 
-class Notes:
+class Notes(object):
 
     def __init__(self):
         self.notes = {'width': '', 'height': '',
@@ -44,7 +44,7 @@ class Notes:
         except:
             return pdf
         else:
-            if text_to_replace == None:
+            if text_to_replace is None:
                 return  pdf
             else:
                 return pdf.replace(text_to_replace[0], '')
