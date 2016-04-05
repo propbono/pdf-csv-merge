@@ -18,8 +18,8 @@ class Move:
             notes = Notes()
             new_pdf = notes.delete_prepp_notes_from(pdf)
             if new_pdf in self.__press_ready_pdf_list():
-                self.pdf_to_delete.append(new_pdf)
-                print(i, new_pdf[:6], "Already in press ready folder - NOT " \
+                self.pdf_to_delete.append(pdf)
+                print(i, new_pdf[:7], "Already in press ready folder - NOT " \
                                     "MOVED")
             else:
                 self.__copy_pdf_to_done_folder(pdf)
@@ -52,11 +52,9 @@ class Move:
                     os.path.join(self.config.PRESS_READY_PDF_PATH, new_name))
 
     def __copy_pdf_to_done_folder(self, pdf):
-        shutil.copyfile(os.path.join(
-                self.config.PREPPED_PDF_PATH, pdf),
-                os.path.join(
-                        self.config.PREPPED_PDF_DONE_PATH, pdf))
+        shutil.copyfile(os.path.join(self.config.PREPPED_PDF_PATH, pdf),
+                os.path.join(self.config.PREPPED_PDF_DONE_PATH, pdf))
 
     def delete_unused_pdf(self, pdf_list):
         for pdf in pdf_list:
-            os.remove(pdf)
+            os.remove(os.path.join(self.config.PREPPED_PDF_PATH, pdf))
