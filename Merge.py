@@ -15,24 +15,31 @@ class Merge():
 
         data = Data(self.pdf_list)
         cleaner = Move()
-        dict_data = ReturnData()
 
         print("Creating CSV's:")
+        tic = timeit.default_timer()
         dict_data = data.save_all_csv()
-        print("CSV - created!")
+        toc = timeit.default_timer()
+        print("CSV - created!", "time (s): ", round(toc - tic, 4))
         print()
         print("Copying CSV's:")
+        tic = timeit.default_timer()
         cleaner.move_merged_csv()
-        print("CSV - copied!")
+        toc = timeit.default_timer()
+        print("CSV - copied!", round(toc - tic, 4))
         print()
         print("Moving pdf's:")
+        tic = timeit.default_timer()
         pdf_to_remove = cleaner.rename_and_move_pdf(self.pdf_list)
-        print("Pdf - moved!")
+        toc = timeit.default_timer()
+        print("Pdf - moved!", round(toc - tic, 4))
         print()
         if pdf_to_remove is not None:
             print("There are some reprints - removing pdf")
+            tic = timeit.default_timer()
             cleaner.delete_unused_pdf(pdf_to_remove)
-            print("Pdf's removed")
+            toc = timeit.default_timer()
+            print("Pdf's removed", round(toc - tic, 4))
         return dict_data.files_added_to_csv, dict_data.files_skipped
 
     def __generate_pdf_list(self):
@@ -42,11 +49,10 @@ class Merge():
 
 if __name__ == "__main__":
     print("Creating pdf list:")
-    pdf_list_tic = timeit.default_timer()
+    tic = timeit.default_timer()
     merge = Merge()
-    pdf_list_toc = timeit.default_timer()
-    print("Pdf list - created!", "time (s): ",
-          round(pdf_list_toc - pdf_list_tic, 4))
+    toc = timeit.default_timer()
+    print("Pdf list - created!", "time (s): ", round(toc - tic, 4))
     print()
     files_to_process = len(merge.pdf_list)
     print("Number of files to process", files_to_process)
