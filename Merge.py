@@ -35,7 +35,7 @@ class Merge(object):
         toc = timeit.default_timer()
         print("Pdf - moved!", round(toc - tic, 4))
         print()
-        if pdf_to_remove is not None:
+        if len(pdf_to_remove) > 0:
             print("There are some reprints - removing pdf")
             tic = timeit.default_timer()
             cleaner.delete_unused_pdf(pdf_to_remove)

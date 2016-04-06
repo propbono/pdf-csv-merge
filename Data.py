@@ -72,7 +72,7 @@ class Data(object):
             else:
                 if notes is None:
                     data.files_skipped += 1
-                    print("NOT PREPPED: ", pdf_without_notes)
+                    print("NOT PREPPED: ", pdf_without_notes[:7])
                 else:
                     product = Product.Product.factory(pdf_without_notes, notes)
                     row = product.merge_notes_without_csv()
@@ -83,7 +83,7 @@ class Data(object):
                     elif notes["type"] == "BOUND":
                         data.rows_bound.setdefault(key, []).append(row)
 
-                    print("ADDED!!: ", pdf)
+                    print("ADDED!!: ", pdf[:7])
                     data.files_added_to_csv += 1
 
         print("All data in dictionary!")
