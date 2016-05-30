@@ -18,13 +18,13 @@ class Notes(object):
     def extract_notes_from(self, pdf):
         try:
             notes_from_pdf = self.__find_prepp_notes(pdf)
-        except None:
-            self.notes = None
+        except Exception as e:
+            print("Error '{0}' occured. Arguments {1}.".format(e, e.args))
         else:
             if notes_from_pdf:
                 notes_from_pdf = notes_from_pdf[0].lstrip('(').rstrip(')').split('-')
-                self.notes["width"] = notes_from_pdf[0].split('x')[0]
-                self.notes["height"] = notes_from_pdf[0].split('x')[1]
+                self.notes["width"] = notes_from_pdf[0].lower().split('x')[0]
+                self.notes["height"] = notes_from_pdf[0].lower().split('x')[1]
                 self.notes["stock"] = notes_from_pdf[1].lower()
                 self.notes["quantity"] = pdf.split('-')[-1].rstrip(".pdf")
 
@@ -48,8 +48,8 @@ class Notes(object):
     def delete_prepp_notes_from(self, pdf):
         try:
             text_to_replace = self.__find_prepp_notes(pdf)
-        except:
-            return pdf
+        except Exception as e:
+            print("Error '{0}' occured. Arguments {1}.".format(e, e.args))
         else:
             if text_to_replace is None:
                 return  pdf
@@ -60,8 +60,8 @@ class Notes(object):
         text_to_replace = None
         try:
             text_to_replace = re.findall(r'\(.*\)', pdf)
-        except: # find proper exception
-            text_to_replace = None
+        except Exception as e:
+            print("Error '{0}' occured. Arguments {1}.".format(e, e.args))
         finally:
             if text_to_replace == []:
                 return None
@@ -186,6 +186,8 @@ class Notes(object):
             notes["group"] = "MATTE"
         if notes["group"] == "N":
             notes["group"] = "NOAQ"
+        if notes["group"] == "F" or notes["group"] == "E" or notes["group"] == "EMBOSS" or notes["group"] == "FOILSTAMP":
+           notes["group"] = "STAMP"
 
     def __check_and_crorrect_type(self, notes):
         if notes["pages"] != "":
