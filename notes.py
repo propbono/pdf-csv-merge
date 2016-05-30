@@ -8,7 +8,12 @@ class Notes(object):
                       "stock": '', 'stockname': '',
                       "stockweight": '', 'quantity': '',
                       'notes': '', 'group': '',
-                      'type': '', 'pages': ''}
+                      'type': '', 'pages': '', 'is_special':''}
+        self.SPECIAL = ["diecut", "sameday", "urgent", 'roundcorner', "matte",
+                        "uv",
+                        "foilstamp", "emboss", "stamp", "drill", "notepad",
+                        "special",
+                        "track", "score", "scoring"]
 
     def extract_notes_from(self, pdf):
         try:
@@ -23,13 +28,15 @@ class Notes(object):
                 self.notes["stock"] = notes_from_pdf[1].lower()
                 self.notes["quantity"] = pdf.split('-')[-1].rstrip(".pdf")
 
-                for n in notes_from_pdf[2:]:
-                    if _operator.contains(n, "n;"):
-                        self.notes["notes"] = n.lstrip("n;")
-                    elif _operator.contains(n, "g;"):
-                        self.notes["group"] = n.lstrip("g;").upper()
-                    elif _operator.contains(n, "p;"):
-                        self.notes["pages"] = n.lstrip("p;")
+                for note in notes_from_pdf[2:]:
+                    if _operator.contains(note, "n;"):
+                        self.notes["notes"] = note.lstrip("n;")
+                    elif _operator.contains(note, "g;"):
+                        self.notes["group"] = note.lstrip("g;").upper()
+                    elif _operator.contains(note, "p;"):
+                        self.notes["pages"] = note.lstrip("p;")
+                    elif note.lower() == 't':
+                        self.notes["is_special"] = "special"
 
                 self.notes = self.__parse_notes(self.notes)
                 pdf = self.delete_prepp_notes_from(pdf)
@@ -74,9 +81,12 @@ class Notes(object):
             notes["group"] = "MATTE"
             self.__add_group_to_notes(notes)
 
+        self.__check_if_special(notes)
+
         return notes
 
     def __check_and_correct_stock(self, notes):
+
         if notes["stock"] == "16pt":
             if int(notes["quantity"]) > 1000:
                 notes["stock"] += "5000"
@@ -182,3 +192,12 @@ class Notes(object):
             notes["type"] = "BOUND"
         else:
             notes["type"] = "FLAT"
+
+    def __check_if_special(self, notes):
+        if notes["is_special"] is "":
+            split_notes = notes["notes"].split(" ")
+            for note in split_notes:
+                if note in self.SPECIAL:
+                    notes["is_special"] = "special"
+                    break
+

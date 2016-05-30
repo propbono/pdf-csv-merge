@@ -3,7 +3,7 @@ import os
 import shutil
 import timeit
 
-from Configuration import Configuration
+from configuration import Configuration
 
 from Notes import Notes
 
