@@ -2,9 +2,9 @@ import csv
 import datetime
 import os
 
-import Product
-from Configuration import Configuration
-from Notes import Notes
+from product import Product
+from configuration import Configuration
+from notes import Notes
 
 
 class ReturnData(object):
@@ -74,7 +74,7 @@ class Data(object):
                     data.files_skipped += 1
                     print("NOT PREPPED: ", pdf_without_notes[:7])
                 else:
-                    product = Product.Product.factory(pdf_without_notes, notes)
+                    product = Product.factory(pdf_without_notes, notes)
                     row = product.merge_notes_without_csv()
 
                     key = notes["stock"]

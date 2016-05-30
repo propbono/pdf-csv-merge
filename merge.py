@@ -4,7 +4,7 @@
 import timeit
 import os
 from data import Data
-from Move import Move
+from move import Move
 from configuration import Configuration
 
 class Merge(object):

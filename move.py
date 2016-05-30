@@ -5,7 +5,7 @@ import timeit
 
 from configuration import Configuration
 
-from Notes import Notes
+from notes import Notes
 
 
 class Move(object):
