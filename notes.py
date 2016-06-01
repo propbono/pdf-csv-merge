@@ -134,6 +134,10 @@ class Notes(object):
             notes["stockname"] = "14pt-Cover"
             notes["stockweight"] = "308"
 
+        if notes["stock"] == "13pt":
+            notes["stockname"] = "13pt-Enviro"
+            notes["stockweight"] = "290"
+
         if notes["stock"] == "24pt":
             notes["stockname"] = "24pt-Cover"
             notes["stockweight"] = "350"
@@ -199,7 +203,7 @@ class Notes(object):
         if notes["is_special"] is "":
             split_notes = notes["notes"].split(" ")
             for note in split_notes:
-                if note in self.SPECIAL:
+                if note.upper() in self.SPECIAL:
                     notes["is_special"] = "special"
-                    break
+                    continue
 
