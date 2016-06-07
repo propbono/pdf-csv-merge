@@ -41,12 +41,17 @@ class Flat(Product):
                          "FolioSide1": "Front", "FolioSide2": "Back"}
 
     def merge_notes_without_csv(self):
-       if "notes" in self.notes:
+        if "notes" in self.notes:
             self.row["Notes"] = self.notes["notes"]
-       self.row["ContentFile"] = self.pdf
-       if "group" in self.notes:
+        self.row["ContentFile"] = self.pdf
+        if "group" in self.notes:
             self.row["ProductGroup"] = self.notes["group"]
-       return self.row
+        if self.notes["stock"] == "d":
+            self.row["BleedsBottom"] = "0.125"
+            self.row["BleedsRight"] = "0.125"
+            self.row["BleedsLeft"] = "0.125"
+            self.row["BleedsTop"] = "0.125"
+        return self.row
 
 class Bound(Product):
     CSV_HEADERS_BOUND_SELF = ["comment", "Name", "Quantity", "Width", "Height",
@@ -89,6 +94,7 @@ class Bound(Product):
                     "1stUpOrientation": "HeadToJog",
                     "NUpOrientation": "", "Grain": ""}
 
+
     def merge_notes_without_csv(self):
         if "pages" in self.notes:
             self.row["TextPageCount"] = self.notes["pages"]
@@ -96,5 +102,10 @@ class Bound(Product):
             self.row["Notes"] = self.notes["group"]
         if "notes" in self.notes:
             self.row["Notes"] += " " + self.notes["notes"]
+        if self.notes["stock"] == "d":
+            self.row["BleedsBottom"] = "0.125"
+            self.row["BleedsRight"] = "0.125"
+            self.row["BleedsLeft"] = "0.125"
+            self.row["BleedsTop"] = "0.125"
 
         return self.row
