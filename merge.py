@@ -31,16 +31,11 @@ class Merge(object):
         print()
         print("Moving pdf's:")
         tic = timeit.default_timer()
-        pdf_to_remove = cleaner.rename_and_move_pdf(self.pdf_list)
+        cleaner.rename_and_move_pdf(self.pdf_list)
         toc = timeit.default_timer()
         print("Pdf - moved!", round(toc - tic, 4))
         print()
-        if len(pdf_to_remove) > 0:
-            print("There are some reprints - removing pdf")
-            tic = timeit.default_timer()
-            cleaner.delete_unused_pdf(pdf_to_remove)
-            toc = timeit.default_timer()
-            print("Reprint Pdf's removed", round(toc - tic, 4))
+
         return dict_data.files_added_to_csv, dict_data.files_skipped
 
     def __generate_pdf_list(self):

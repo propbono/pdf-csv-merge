@@ -15,26 +15,15 @@ class Move(object):
 
 
     def rename_and_move_pdf(self, pdf_list):
-        press_ready_pdf_list = self.__press_ready_pdf_list()
         for i, pdf in enumerate(pdf_list, 1):
             tic = timeit.default_timer()
             notes = Notes()
             new_pdf = notes.delete_prepp_notes_from(pdf)
-            if new_pdf in press_ready_pdf_list:
-                self.pdf_to_delete.append(pdf)
-                toc = timeit.default_timer()
-                print(i, new_pdf[:7], "NOT MOVED, time: ", round(toc - tic, 4), "s")
-            else:
-                self.__copy_pdf_to_done_folder(pdf)
-                self.__move_pdf_to_press_ready_pdf(pdf, new_pdf)
-                toc = timeit.default_timer()
-                print(i, new_pdf[:7], "MOVED, time: ", round(toc - tic, 4), "s")
-        return self.pdf_to_delete
+            self.__copy_pdf_to_done_folder(pdf)
+            self.__move_pdf_to_press_ready_pdf(pdf, new_pdf)
+            toc = timeit.default_timer()
+            print(i, new_pdf[:7], "MOVED, time: ", round(toc - tic, 4), "s")
 
-    def __press_ready_pdf_list(self):
-        press_ready_pdf_list = [p for p in sorted(
-            os.listdir(self.config.PRESS_READY_PDF_PATH)) if p.upper().startswith("U") and p.lower().endswith('.pdf')]
-        return press_ready_pdf_list
 
     def move_merged_csv(self):
         today = datetime.date.today().isoformat()
