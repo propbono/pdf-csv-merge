@@ -2,7 +2,7 @@ import os
 import sys
 #
 class Configuration(object):
-    init_type = "Debug"
+    init_type = "Working"
     @staticmethod
     def factory(type=init_type):
         if type == "Debug": return Debug()
