@@ -190,8 +190,12 @@ class Notes(object):
             notes["group"] = "MATTE"
         if notes["group"] == "N":
             notes["group"] = "NOAQ"
-        if notes["group"] == "F" or notes["group"] == "E" or notes["group"] == "EMBOSS" or notes["group"] == "FOILSTAMP":
-           notes["group"] = "STAMP"
+        if notes["group"] == "F":
+            notes["group"] = "FOILSTAMP"
+        if notes["group"] == "E":
+            notes["group"] = "EMBOSS"
+        if notes["group"] == "SC":
+            notes["group"] = "SCORE"
 
     def __check_and_crorrect_type(self, notes):
         if notes["pages"] != "":
