@@ -30,7 +30,7 @@ class Notes(object):
 
                 for note in notes_from_pdf[2:]:
                     if _operator.contains(note, "n;"):
-                        self.notes["notes"] = note.lstrip("n;")
+                        self.notes["notes"] =  note.lstrip("n;")
                     elif _operator.contains(note, "g;"):
                         self.notes["group"] = note.lstrip("g;").upper()
                     elif _operator.contains(note, "p;"):
@@ -87,11 +87,7 @@ class Notes(object):
 
     def __check_and_correct_stock(self, notes):
 
-        if notes["stock"] == "16pt":
-            if int(notes["quantity"]) > 1000:
-                notes["stock"] += "5000"
-            else:
-                notes["stock"] += "1000"
+        self.__return_proper_stock(notes)
 
         if _operator.contains(notes["stock"], "16pt") or notes["stock"] == \
                 "uv" or notes["stock"] == "matte":
@@ -169,6 +165,13 @@ class Notes(object):
         if notes["pages"] != "":
             notes["stock"] += "magazine"
             notes["notes"] += " BOOKLET"
+
+    def __return_proper_stock(self, notes):
+        if notes["stock"] == "16pt":
+            if int(notes["quantity"]) > 1000:
+                notes["stock"] += "5000"
+            else:
+                notes["stock"] += "1000"
 
     def __add_group_to_notes(self, notes):
         notes["notes"] = notes["group"] + " " + notes["notes"]
