@@ -66,7 +66,7 @@ class Data(object):
         for pdf in self.pdf_list:
             notes = Notes()
             try:
-                pdf_without_notes, notes = notes.extract_notes_from(pdf)
+                pdf_without_notes, notes = notes.extract_notes(pdf)
             except:
                 continue #check impact
             else:

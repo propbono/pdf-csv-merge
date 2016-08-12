@@ -7,7 +7,7 @@ class Product(object):
         assert 0, "Bad Product type: " + type
 
 class Flat(Product):
-    CSV_HEADERS_FLAT = ["comment", "Name", "Quantity", "Width", "Height",
+    CSV_HEADERS = ["comment", "Name", "Quantity", "Width", "Height",
                         "StockVendor", "StockName", "StockWeight", "IGNORED1",
                         "IGNORED2", "Priority", "TopOffcut", "LeftOffcut",
                         "BottomOffcut", "RightOffcut", "ProductID",
@@ -54,7 +54,7 @@ class Flat(Product):
         return self.row
 
 class Bound(Product):
-    CSV_HEADERS_BOUND_SELF = ["comment", "Name", "Quantity", "Width", "Height",
+    CSV_HEADERS = ["comment", "Name", "Quantity", "Width", "Height",
                               "StockVendor", "StockName", "StockWeight",
                               "IGNORED0", "TextPageCount",
                               "LargestTextComponent",

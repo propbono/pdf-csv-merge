@@ -9,15 +9,21 @@ class Notes(object):
                       "stockweight": '', 'quantity': '',
                       'notes': '', 'group': '',
                       'type': '', 'pages': '', 'is_special':''}
-        self.SPECIAL = ["diecut", "sameday", "urgent", 'roundcorner', "matte",
-                        "uv",
-                        "foilstamp", "emboss", "stamp", "drill", "notepad",
-                        "special",
-                        "track", "score", "scoring"]
+        self.SPECIAL_NOTES = "stamp,drill,notepad,notepads,special,track," \
+                             "scoring".upper().split(",")
+        self.SPECIAL_GROUPS = "d,diecut,s,sameday,u,urgent,r," \
+                         "roundcorner,p,presssample,n,noaq,f," \
+                         "foilstamp,e,emboss,sc,score".upper().split(",")
 
-    def extract_notes_from(self, pdf):
+
+        self.GROUPS = {"D": "DIECUT", "O": "ONESIDED", "S": "SAMEDAY", "U": "URGENT",
+               "R": "ROUNDCORNER", "P": "PRESSSAMPLE", "M": "MATTE",
+               "N": "NOAQ",
+               "F": "FOILSTAMP", "E": "EMBOSS", "SC": "SCORE"}
+
+    def extract_notes(self, pdf):
         try:
-            notes_from_pdf = self.__find_prepp_notes(pdf)
+            notes_from_pdf = self._find_prepp_notes(pdf)
         except Exception as e:
             print("Error '{0}' occured. Arguments {1}.".format(e, e.args))
         else:
@@ -32,13 +38,13 @@ class Notes(object):
                     if _operator.contains(note, "n;"):
                         self.notes["notes"] = note.lstrip("n;")
                     elif _operator.contains(note, "g;"):
-                        self.notes["group"] = note.lstrip("g;").upper()
+                        self.notes["group"] =  note.lstrip("g;").upper()
                     elif _operator.contains(note, "p;"):
                         self.notes["pages"] = note.lstrip("p;")
-                    elif note.lower() == 't':
+                    elif note.lower() == 't' or note.lower() == 't;':
                         self.notes["is_special"] = "special"
 
-                self.notes = self.__parse_notes(self.notes)
+                self.notes = self._parse_notes(self.notes)
                 pdf = self.delete_prepp_notes_from(pdf)
             else:
                 self.notes = None
@@ -47,7 +53,7 @@ class Notes(object):
 
     def delete_prepp_notes_from(self, pdf):
         try:
-            text_to_replace = self.__find_prepp_notes(pdf)
+            text_to_replace = self._find_prepp_notes(pdf)
         except Exception as e:
             print("Error '{0}' occured. Arguments {1}.".format(e, e.args))
         else:
@@ -56,7 +62,7 @@ class Notes(object):
             else:
                 return pdf.replace(text_to_replace[0], '')
 
-    def __find_prepp_notes(self, pdf):
+    def _find_prepp_notes(self, pdf):
         text_to_replace = None
         try:
             text_to_replace = re.findall(r'\(.*\)', pdf)
@@ -68,24 +74,28 @@ class Notes(object):
             else:
                 return text_to_replace
 
-    def __parse_notes(self, notes):
-        self.__check_and_correct_stock(notes)
-        self.__check_and_crorrect_group(notes)
-        self.__add_group_to_notes(notes)
-        self.__check_and_crorrect_type(notes)
+    def _parse_notes(self, notes):
+        notes = self._check_and_correct_stock(notes)
+        notes = self._check_and_crorrect_group(notes)
+        notes = self._add_group_to_notes(notes)
+        notes = self._check_and_crorrect_type(notes)
 
-        if notes["stock"] == "uv" or notes["stock"] == "u":
-            notes["group"] = "UV"
-            self.__add_group_to_notes(notes)
-        if notes["stock"] == "matte" or notes["stock"] == "m":
-            notes["group"] = "MATTE"
-            self.__add_group_to_notes(notes)
+        notes = self._correct_uv_matte_stock(notes)
 
-        self.__check_if_special(notes)
+        notes = self._check_if_special(notes)
 
         return notes
 
-    def __check_and_correct_stock(self, notes):
+    def _correct_uv_matte_stock(self, notes):
+        if notes["stock"] == "uv" or notes["stock"] == "u":
+            notes["group"] = "UV"
+            self._add_group_to_notes(notes)
+        if notes["stock"] == "matte" or notes["stock"] == "m":
+            notes["group"] = "MATTE"
+            self._add_group_to_notes(notes)
+        return notes
+
+    def _check_and_correct_stock(self, notes):
 
         if notes["stock"] == "16pt":
             if int(notes["quantity"]) > 1000:
@@ -169,41 +179,73 @@ class Notes(object):
         if notes["pages"] != "":
             notes["stock"] += "magazine"
             notes["notes"] += " BOOKLET"
+        return notes
 
-    def __add_group_to_notes(self, notes):
+    def _add_group_to_notes(self, notes):
         notes["notes"] = notes["group"] + " " + notes["notes"]
+        return notes
 
-    def __check_and_crorrect_group(self, notes):
+    def _check_and_crorrect_group(self, notes):
         if notes["group"] == "D":
             notes["group"] = "DIECUT"
-        if notes["group"] == "O":
+        elif notes["group"] == "O":
             notes["group"] = "ONESIDED"
-        if notes["group"] == "S":
+        elif notes["group"] == "S":
             notes["group"] = "SAMEDAY"
-        if notes["group"] == "U":
+        elif notes["group"] == "U":
             notes["group"] = "URGENT"
-        if notes["group"] == "R":
+        elif notes["group"] == "R":
             notes["group"] = "ROUNDCORNER"
-        if notes["group"] == "P":
+        elif notes["group"] == "P":
             notes["group"] = "PRESSSAMPLE"
-        if notes["group"] == "M":
+        elif notes["group"] == "M":
             notes["group"] = "MATTE"
-        if notes["group"] == "N":
+        elif notes["group"] == "N":
             notes["group"] = "NOAQ"
-        if notes["group"] == "F" or notes["group"] == "E" or notes["group"] == "EMBOSS" or notes["group"] == "FOILSTAMP":
-           notes["group"] = "STAMP"
+        elif notes["group"] == "F":
+            notes["group"] = "FOILSTAMP"
+        elif notes["group"] == "E":
+            notes["group"] = "EMBOSS"
+        elif notes["group"] == "SC":
+            notes["group"] = "SCORE"
+        elif self._check_if_mixed_group(notes["group"]):
+            notes["notes"] += self._correct_notes_for_mixed_group(notes["group"])
+            notes["group"] = "MIXED"
+        elif _operator.contains(notes["group"], ","):
+            notes["group"] = ""
 
-    def __check_and_crorrect_type(self, notes):
+
+        return notes
+
+    def _check_and_crorrect_type(self, notes):
         if notes["pages"] != "":
             notes["type"] = "BOUND"
         else:
             notes["type"] = "FLAT"
 
-    def __check_if_special(self, notes):
-        if notes["is_special"] is "":
-            split_notes = notes["notes"].split(" ")
-            for note in split_notes:
-                if note.upper() in self.SPECIAL:
-                    notes["is_special"] = "special"
-                    continue
+        return notes
 
+    def _check_if_special(self, notes):
+        if notes["is_special"] is "":
+            if self._check_if_special_group(notes) or \
+                    self._check_if_special_note(notes):
+                notes["is_special"] = "special"
+        return notes
+
+    def _check_if_special_group(self, notes):
+        return notes["group"] in self.SPECIAL_GROUPS
+
+    def _check_if_mixed_group(self, notes):
+        group_to_check = notes.split(",")
+        is_mixed = [i for i in group_to_check if i in self.GROUPS.keys()]
+        return is_mixed
+
+    def _check_if_special_note(self, notes):
+        notes_to_check = notes["notes"].upper().split(" ")
+        return [i for i in notes_to_check if i in self.SPECIAL_NOTES]
+
+    def _correct_notes_for_mixed_group(self, notes):
+        groups = ""
+        for n in notes.split(','):
+            groups += " " + self.GROUPS[n]
+        return groups
