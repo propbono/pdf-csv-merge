@@ -202,6 +202,7 @@ class Notes(object):
             notes["group"] = "MATTE"
         elif notes["group"] == "N":
             notes["group"] = "NOAQ"
+
         elif notes["group"] == "F":
             notes["group"] = "FOILSTAMP"
         elif notes["group"] == "E":
@@ -213,8 +214,6 @@ class Notes(object):
             notes["group"] = "MIXED"
         elif _operator.contains(notes["group"], ","):
             notes["group"] = ""
-
-
         return notes
 
     def _check_and_crorrect_type(self, notes):
