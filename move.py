@@ -13,7 +13,6 @@ class Move(object):
         self.config = Configuration.factory()
         self.pdf_to_delete = []
 
-
     def rename_and_move_pdf(self, pdf_list):
         for i, pdf in enumerate(pdf_list, 1):
             tic = timeit.default_timer()
@@ -23,7 +22,6 @@ class Move(object):
             self.__move_pdf_to_press_ready_pdf(pdf, new_pdf)
             toc = timeit.default_timer()
             print(i, new_pdf[:7], "MOVED, time: ", round(toc - tic, 4), "s")
-
 
     def move_merged_csv(self):
         today = datetime.date.today().isoformat()
