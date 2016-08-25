@@ -150,6 +150,10 @@ class Notes(object):
             notes["stockname"] = "70lb-Offset"
             notes["stockweight"] = "95"
 
+        if notes["stock"] == "80lboffset":
+            notes["stockname"] = "80lb-Offset"
+            notes["stockweight"] = "100"
+
         if notes["stock"] == "60lboffset":
             notes["stockname"] = "60lb-Offset"
             notes["stockweight"] = "90"
