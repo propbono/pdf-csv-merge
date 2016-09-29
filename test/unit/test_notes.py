@@ -1,4 +1,6 @@
 import unittest
+
+import notes
 from notes import Notes
 
 
@@ -16,7 +18,7 @@ class TestNotes(unittest.TestCase):
 
     def test_extract_notes_when_group_small_caps_group_returns_allcaps_group(self):
         pdf, parsed_notes = self.make_arrangements()
-        self.assertEqual("URGENT", parsed_notes["group"], msg = "Group Should br all caps")
+        self.assertEqual(parsed_notes["group"], parsed_notes["group"].upper(), msg = "Group Should br all caps")
 
     def test__check_if_special_returns_special_when_sameday(self):
         notes = Notes()
@@ -127,6 +129,25 @@ class TestNotes(unittest.TestCase):
         self.assertIn("DIECUT", splited_notes, "Notes should have DIECUT in it")
         self.assertIn("UV", splited_notes, "Notes should have UV in it")
 
+    def test_extract_notes_when_company_name_fedex_and_no_group_group_should_be_x(self):
+        pdf_name = "U100030-S100030-Fedex-LixarAsafKarpel(3.5x2-16pt-n;drill)-500.pdf"
+        pdf, parsed_notes = self.make_arrangements(pdf_name)
+        self.assertEqual("FEDEX", parsed_notes["group"], msg = "The group should be FEDEX")
+
+    def test_extract_notes_when_company_name_fedex_and_group_s_group_should_be_sx(self):
+        pdf_name = "U100030-S100030-Fedex-LixarAsafKarpel(3.5x2-16pt-g;s-n;drill)-500.pdf"
+        pdf, parsed_notes = self.make_arrangements(pdf_name)
+        self.assertEqual("MIXED", parsed_notes["group"], msg = "The group should be MIXED")
+
+    def test_extract_notes_when_company_name_fedex_and_group_sdm_notes_should_be_FEDEX_SAMEDAY_DIECUT_MATTE(self):
+        pdf_name = "U100030-S100030-fedex-LixarAsafKarpel(3.5x2-uv-g;s,d-n;drill)-500.pdf"
+        pdf, parsed_notes = self.make_arrangements(pdf_name)
+        splited_notes = parsed_notes["notes"].split(" ")
+
+        self.assertIn("SAMEDAY", splited_notes, "Notes should have SAMEDAY in it")
+        self.assertIn("DIECUT", splited_notes, "Notes should have DIECUT in it")
+        self.assertIn("UV", splited_notes, "Notes should have UV in it")
+        self.assertIn("FEDEX", splited_notes, "Notes should have FEDEX in it")
 
 if __name__ == "__main__":
     unittest.main()

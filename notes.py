@@ -9,17 +9,13 @@ class Notes(object):
                       "stockweight": '', 'quantity': '',
                       'notes': '', 'group': '',
                       'type': '', 'pages': '', 'is_special':''}
-        self.SPECIAL_NOTES = "stamp,drill,notepad,notepads,special,track," \
-                             "scoring".upper().split(",")
-        self.SPECIAL_GROUPS = "d,diecut,s,sameday,u,urgent,r," \
-                         "roundcorner,p,presssample,n,noaq,f," \
-                         "foilstamp,e,emboss,sc,score,fedex,x".upper().split(",")
+        self.SPECIAL_NOTES = "stamp,drill,notepad,notepads,special,track,scoring".upper().split(",")
+        self.SPECIAL_GROUPS = "d,diecut,s,sameday,u,urgent,r,roundcorner,p,presssample,n,noaq,f,foilstamp,e,emboss,sc,score,fedex,x".upper().split(",")
 
 
-        self.GROUPS = {"D": "DIECUT", "O": "ONESIDED", "S": "SAMEDAY", "U": "URGENT",
-               "R": "ROUNDCORNER", "P": "PRESSSAMPLE", "M": "MATTE",
-               "N": "NOAQ",
-               "F": "FOILSTAMP", "E": "EMBOSS", "SC": "SCORE", "X": "FEDEX", "V" : "UV", "M" : "MATTE"}
+
+        self.GROUPS = {"D": "DIECUT", "O": "ONESIDED", "S": "SAMEDAY", "U": "URGENT", "R": "ROUNDCORNER", "P": "PRESSSAMPLE", "M": "MATTE", "N": "NOAQ", "F": "FOILSTAMP", "E": "EMBOSS", "SC": "SCORE", "X": "FEDEX", "V" : "UV", "M" : "MATTE"}
+
 
     def extract_notes(self, pdf):
         try:
@@ -28,6 +24,7 @@ class Notes(object):
             print("Error '{0}' occured. Arguments {1}.".format(e, e.args))
         else:
             if notes_from_pdf:
+                name = pdf.split('-')[2].lower()
                 notes_from_pdf = notes_from_pdf[0].lstrip('(').rstrip(')').split('-')
                 self.notes["width"] = notes_from_pdf[0].lower().split('x')[0]
                 self.notes["height"] = notes_from_pdf[0].lower().split('x')[1]
@@ -43,6 +40,11 @@ class Notes(object):
                         self.notes["pages"] = note.lstrip("p;")
                     elif note.lower() == 't' or note.lower() == 't;':
                         self.notes["is_special"] = "special"
+                if _operator.contains(name, "fedex"):
+                    if self.notes["group"] == "":
+                        self.notes["group"] = "x".upper()
+                    else:
+                        self.notes["group"] +=",x".upper()
 
                 self.notes = self._parse_notes(self.notes)
                 pdf = self.delete_prepp_notes_from(pdf)
@@ -214,6 +216,8 @@ class Notes(object):
             notes["group"] = "EMBOSS"
         elif notes["group"] == "SC":
             notes["group"] = "SCORE"
+        elif notes["group"] == "X":
+            notes["group"] = "FEDEX"
         elif self._check_if_mixed_group(notes["group"]):
             notes["notes"] += self._correct_notes_for_mixed_group(notes["group"])
             notes["group"] = "MIXED"
@@ -237,7 +241,9 @@ class Notes(object):
         return notes
 
     def _check_if_special_group(self, notes):
-        return notes["group"] in self.SPECIAL_GROUPS
+        for group in notes["group"].split(","):
+            if group in self.SPECIAL_GROUPS:
+                return True
 
     def _check_if_mixed_group(self, notes):
         group_to_check = notes.split(",")
