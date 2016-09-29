@@ -13,13 +13,13 @@ class Notes(object):
                              "scoring".upper().split(",")
         self.SPECIAL_GROUPS = "d,diecut,s,sameday,u,urgent,r," \
                          "roundcorner,p,presssample,n,noaq,f," \
-                         "foilstamp,e,emboss,sc,score".upper().split(",")
+                         "foilstamp,e,emboss,sc,score,fedex,x".upper().split(",")
 
 
         self.GROUPS = {"D": "DIECUT", "O": "ONESIDED", "S": "SAMEDAY", "U": "URGENT",
                "R": "ROUNDCORNER", "P": "PRESSSAMPLE", "M": "MATTE",
                "N": "NOAQ",
-               "F": "FOILSTAMP", "E": "EMBOSS", "SC": "SCORE"}
+               "F": "FOILSTAMP", "E": "EMBOSS", "SC": "SCORE", "X": "FEDEX", "V" : "UV", "M" : "MATTE"}
 
     def extract_notes(self, pdf):
         try:
@@ -206,7 +206,8 @@ class Notes(object):
             notes["group"] = "MATTE"
         elif notes["group"] == "N":
             notes["group"] = "NOAQ"
-
+        elif notes["group"] == "X":
+            notes["group"] = "FEDEX"
         elif notes["group"] == "F":
             notes["group"] = "FOILSTAMP"
         elif notes["group"] == "E":
