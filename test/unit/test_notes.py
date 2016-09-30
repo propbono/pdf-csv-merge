@@ -106,6 +106,11 @@ class TestNotes(unittest.TestCase):
         pdf, parsed_notes = self.make_arrangements(pdf_name)
         self.assertEqual("MIXED", parsed_notes["group"], msg = "group should be MIXED")
 
+    def test_extract_notes_when_group_SAMEDAY_group_should_be_SAMEDAY(self):
+        pdf_name = "U100030-S100030-BossImageInc-LixarAsafKarpel(3.5x2-16pt-g;sameday-n;drill)-500.pdf"
+        pdf, parsed_notes = self.make_arrangements(pdf_name)
+        self.assertEqual("SAMEDAY", parsed_notes["group"], msg = "group should be SAMEDAY")
+
     def test_extract_notes_when_group_comma_group_should_be_empty(self):
         pdf_name = "U100030-S100030-BossImageInc-LixarAsafKarpel(3.5x2-16pt-g;,-n;drill)-500.pdf"
         pdf, parsed_notes = self.make_arrangements(pdf_name)
