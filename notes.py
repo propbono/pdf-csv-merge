@@ -14,7 +14,10 @@ class Notes(object):
 
 
 
-        self.GROUPS = {"D": "DIECUT", "O": "ONESIDED", "S": "SAMEDAY", "U": "URGENT", "R": "ROUNDCORNER", "P": "PRESSSAMPLE", "M": "MATTE", "N": "NOAQ", "F": "FOILSTAMP", "E": "EMBOSS", "SC": "SCORE", "X": "FEDEX", "V" : "UV", "M" : "MATTE"}
+        self.GROUPS = {"D": "DIECUT", "O": "ONESIDED", "S": "SAMEDAY", "U": "URGENT",
+                       "R": "ROUNDCORNER", "P": "PRESSSAMPLE", "M": "MATTE",
+                       "N": "NOAQ", "F": "FOILSTAMP", "E": "EMBOSS", "SC": "SCORE",
+                       "X": "FEDEX", "V" : "UV"}
 
 
     def extract_notes(self, pdf):
@@ -192,32 +195,8 @@ class Notes(object):
         return notes
 
     def _check_and_crorrect_group(self, notes):
-        if notes["group"] == "D":
-            notes["group"] = "DIECUT"
-        elif notes["group"] == "O":
-            notes["group"] = "ONESIDED"
-        elif notes["group"] == "S":
-            notes["group"] = "SAMEDAY"
-        elif notes["group"] == "U":
-            notes["group"] = "URGENT"
-        elif notes["group"] == "R":
-            notes["group"] = "ROUNDCORNER"
-        elif notes["group"] == "P":
-            notes["group"] = "PRESSSAMPLE"
-        elif notes["group"] == "M":
-            notes["group"] = "MATTE"
-        elif notes["group"] == "N":
-            notes["group"] = "NOAQ"
-        elif notes["group"] == "X":
-            notes["group"] = "FEDEX"
-        elif notes["group"] == "F":
-            notes["group"] = "FOILSTAMP"
-        elif notes["group"] == "E":
-            notes["group"] = "EMBOSS"
-        elif notes["group"] == "SC":
-            notes["group"] = "SCORE"
-        elif notes["group"] == "X":
-            notes["group"] = "FEDEX"
+        if notes["group"] in self.GROUPS:
+            notes["group"] = self.GROUPS[notes["group"]]
         elif self._check_if_mixed_group(notes["group"]):
             notes["notes"] += self._correct_notes_for_mixed_group(notes["group"])
             notes["group"] = "MIXED"
