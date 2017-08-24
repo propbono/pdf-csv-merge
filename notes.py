@@ -1,5 +1,6 @@
-import re
 import _operator
+import re
+
 
 class Notes(object):
 
@@ -8,7 +9,7 @@ class Notes(object):
                       "stock": '', 'stockname': '',
                       "stockweight": '', 'quantity': '',
                       'notes': '', 'group': '',
-                      'type': '', 'pages': '', 'is_special':''}
+                      'type': '', 'pages': '', 'operator':''}
         self.SPECIAL_NOTES = "stamp,drill,notepad,notepads,special,track,scoring".upper().split(",")
         self.SPECIAL_GROUPS = "d,diecut,s,sameday,u,urgent,r,roundcorner,p,presssample,n,noaq,f,foilstamp,e,emboss,sc,score,fedex,x".upper().split(",")
 
@@ -30,6 +31,7 @@ class Notes(object):
                 self.notes["height"] = notes_from_pdf[0].lower().split('x')[1]
                 self.notes["stock"] = notes_from_pdf[1].lower()
                 self.notes["quantity"] = pdf.split('-')[-1].rstrip(".pdf")
+                self.notes["operator"] = "Tson"
 
                 for note in notes_from_pdf[2:]:
                     if _operator.contains(note, "n;"):
@@ -38,8 +40,12 @@ class Notes(object):
                         self.notes["group"] =  note.lstrip("g;").upper()
                     elif _operator.contains(note, "p;"):
                         self.notes["pages"] = note.lstrip("p;")
-                    elif note.lower() == 't' or note.lower() == 't;':
-                        self.notes["is_special"] = "special"
+                    # elif note.lower() == 't' or note.lower() == 't;':
+                    #     self.notes["is_special"] = "special"
+                    elif _operator.contains(note.lower(), "g"):
+                        self.notes["operator"] = "Greg"
+                    elif _operator.contains(note.lower(), "t"):
+                        self.notes["operator"] = "Tson"
                 if _operator.contains(name, "fedex"):
                     if self.notes["group"] == "":
                         self.notes["group"] = "x".upper()
@@ -84,7 +90,7 @@ class Notes(object):
 
         notes = self._correct_uv_matte_stock(notes)
 
-        notes = self._check_if_special(notes)
+        # notes = self._check_if_special(notes)
 
         return notes
 
@@ -118,6 +124,14 @@ class Notes(object):
             notes["stockname"] = "80lb-Text"
             notes["stockweight"] = "115"
 
+        if notes["stock"] == "80lbSilkCover":
+            notes["stockname"] = "80lb-SilkCover"
+            notes["stockweight"] = "260"
+
+        if notes["stock"] == "70lbSilk":
+            notes["stockname"] = "70lb-SilkText"
+            notes["stockweight"] = "95"
+
         if notes["stock"] == "70lb":
             notes["stockname"] = "70lb-Text"
             notes["stockweight"] = "95"
@@ -125,6 +139,10 @@ class Notes(object):
         if notes["stock"] == "60lb":
             notes["stockname"] = "60lb-Text"
             notes["stockweight"] = "90"
+
+        if notes["stock"] == "65lbLynxCover":
+            notes["stockname"] = "65lb-LynxCover"
+            notes["stockweight"] = "230"
 
         if notes["stock"] == "18pt":
             notes["stockname"] = "18pt-Matte"
@@ -156,7 +174,7 @@ class Notes(object):
 
         if notes["stock"] == "15pt":
             notes["stockname"] = "15pt-C1S"
-            notes["stockweight"] = "308"
+            notes["stockweight"] = "358"
 
         if notes["stock"] == "70lboffset":
             notes["stockname"] = "70lb-Offset"

@@ -4,7 +4,6 @@ import shutil
 import timeit
 
 from configuration import Configuration
-
 from notes import Notes
 
 
@@ -25,16 +24,18 @@ class Move(object):
 
     def move_merged_csv(self):
         today = datetime.date.today().isoformat()
-        remote_dir_name = os.path.join(self.config.MERGED_CSV_REMOTE, today)
+        year = str(datetime.date.today().year)
+        path = os.path.join(year, today)
+        remote_dir_name = os.path.join(self.config.MERGED_CSV_REMOTE, path)
         if not os.path.isdir(remote_dir_name):
             os.mkdir(remote_dir_name)
 
         local_csv_list = os.listdir(
-                os.path.join(self.config.MERGED_CSV_LOCAL, today))
+                os.path.join(self.config.MERGED_CSV_LOCAL,path))
         for csv_name in local_csv_list:
             shutil.copy(
-                os.path.join(self.config.MERGED_CSV_LOCAL, today, csv_name),
-                os.path.join(self.config.MERGED_CSV_REMOTE, today, csv_name))
+                os.path.join(self.config.MERGED_CSV_LOCAL,path, csv_name),
+                os.path.join(self.config.MERGED_CSV_REMOTE,path, csv_name))
 
     def __move_pdf_to_press_ready_pdf(self, name, new_name):
         shutil.move(os.path.join(self.config.PREPPED_PDF_PATH, name),

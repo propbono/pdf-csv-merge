@@ -2,9 +2,9 @@ import csv
 import datetime
 import os
 
-from product import Product
 from configuration import Configuration
 from notes import Notes
+from product import Product
 
 
 class ReturnData(object):
@@ -92,9 +92,10 @@ class Data(object):
 
     def __save_csv_dict_data(self,key, data_dict, headers):
         today = datetime.datetime.today().strftime("%Y-%m-%d")
+        year =  str(datetime.datetime.today().year)
         now = datetime.datetime.now().strftime("%Y-%m-%dT%H%M")  # date:
         # 2015-11-03T1935
-        dir_name = os.path.join(self.config.MERGED_CSV_LOCAL, today)
+        dir_name = os.path.join(self.config.MERGED_CSV_LOCAL, year, today)
         csv_file_name = os.path.join(self.config.MERGED_CSV_LOCAL, dir_name,
                                      key + '-' + now + '.csv')
 
